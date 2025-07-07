@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
 </head>
 
 <body>
@@ -34,10 +34,34 @@
                              throw new Error(`Het ophalen van het bestand is mislukt met status: ${response.status}`);
                         }
                         const arrayBuffer = await response.arrayBuffer();
-                        const data = new Uint8Array(arrayBuffer);
-                        const workbook = XLSX.read(data, { type: "array" });
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                        const workbook = new ExcelJS.Workbook();
+                        await workbook.xlsx.load(arrayBuffer);
+                        const firstSheet = workbook.worksheets[0];
+                        
+                        // Convert ExcelJS worksheet to array format
+                        const jsonData = [];
+                        firstSheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+                            const rowData = [];
+                            row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
+                                let cellValue = cell.value || '';
+                                
+                                // Handle different cell types
+                                if (cell.value && typeof cell.value === 'object') {
+                                    if (cell.value.richText) {
+                                        cellValue = cell.value.richText.map(rt => rt.text).join('');
+                                    } else if (cell.value.formula) {
+                                        cellValue = cell.value.result || cell.value.formula;
+                                    } else if (cell.value.hyperlink) {
+                                        cellValue = cell.value.text || cell.value.hyperlink;
+                                    } else {
+                                        cellValue = cell.value.toString();
+                                    }
+                                }
+                                
+                                rowData[colNumber - 1] = cellValue;
+                            });
+                            jsonData.push(rowData);
+                        });
                         
                         if(jsonData.length === 0){
                             throw new Error("Het Excel-bestand is leeg of kon niet correct worden gelezen.");
