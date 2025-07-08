@@ -209,28 +209,71 @@ body {
     border-radius: 0 0 15px 15px;
 }
 
-/* Override SpreadJS styles for better integration */
-.gc-spread-sheets {
-    border-radius: 0 0 15px 15px !important;
-    border: none !important;
+/* Theme variations */
+.data-table.theme-dark {
+    background: #2d3748;
+    color: #e2e8f0;
 }
 
-.gc-spread-sheets .gc-spread-sheet-container {
-    border-radius: 0 0 15px 15px !important;
+.data-table.theme-dark .table-header {
+    background: #1a202c;
+    color: #e2e8f0;
 }
 
-/* Custom SpreadJS toolbar styling */
-.gc-spread-sheets .gc-spread-ribbon {
-    background: #f8f9fa !important;
-    border-bottom: 1px solid #dee2e6 !important;
+.data-table.theme-dark .table-row:nth-child(even) {
+    background-color: #4a5568;
 }
 
-.gc-spread-sheets .gc-spread-ribbon-button {
-    transition: all 0.2s ease !important;
+.data-table.theme-dark .table-row:hover {
+    background-color: rgba(0, 123, 255, 0.3);
 }
 
-.gc-spread-sheets .gc-spread-ribbon-button:hover {
-    background: rgba(0, 123, 255, 0.1) !important;
+.data-table.theme-blue .table-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.data-table.theme-green .table-header {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.stats {
+    background: #e9ecef;
+    padding: 10px 30px;
+    font-size: 14px;
+    color: #6c757d;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 500;
+}
+
+.sheet-tabs {
+    background: #f8f9fa;
+    padding: 0;
+    display: flex;
+    border-bottom: 1px solid #dee2e6;
+    overflow-x: auto;
+}
+
+.sheet-tab {
+    background: transparent;
+    border: none;
+    padding: 15px 25px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #6c757d;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.sheet-tab:hover {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+.sheet-tab.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
 }
 
 /* Success message styles */
