@@ -14,6 +14,15 @@ react-dom.production.min.js:141  Error: Minified React error #31; visit https://
     at react-dom.production.min.js:73:230
     at unstable_runWithPriority (react.production.min.js:24:26)
 Ye @ react-dom.production.min.js:141
+await in Ye
+(anonymous) @ Inline Babel script:63
+Tj @ react-dom.production.min.js:179
+unstable_runWithPriority @ react.production.min.js:24
+Za @ react-dom.production.min.js:73
+Ra @ react-dom.production.min.js:178
+(anonymous) @ react-dom.production.min.js:178
+R @ react.production.min.js:16
+ua.port1.onmessage @ react.production.min.js:22
 react-dom.production.min.js:141  Error: Minified React error #31; visit https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=Invalid%20Date for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
     at ed (react-dom.production.min.js:84:408)
     at react-dom.production.min.js:94:277
@@ -26,6 +35,15 @@ react-dom.production.min.js:141  Error: Minified React error #31; visit https://
     at react-dom.production.min.js:73:230
     at unstable_runWithPriority (react.production.min.js:24:26)
 Ye @ react-dom.production.min.js:141
+await in Ye
+(anonymous) @ Inline Babel script:63
+Tj @ react-dom.production.min.js:179
+unstable_runWithPriority @ react.production.min.js:24
+Za @ react-dom.production.min.js:73
+Ra @ react-dom.production.min.js:178
+(anonymous) @ react-dom.production.min.js:178
+R @ react.production.min.js:16
+ua.port1.onmessage @ react.production.min.js:22
 react-dom.production.min.js:84  Uncaught (in promise) Error: Minified React error #31; visit https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=Invalid%20Date for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
     at ed (react-dom.production.min.js:84:408)
     at react-dom.production.min.js:94:277
@@ -37,3 +55,28 @@ react-dom.production.min.js:84  Uncaught (in promise) Error: Minified React erro
     at gf (react-dom.production.min.js:162:109)
     at react-dom.production.min.js:73:230
     at unstable_runWithPriority (react.production.min.js:24:26)
+ed @ react-dom.production.min.js:84
+(anonymous) @ react-dom.production.min.js:94
+U @ react-dom.production.min.js:110
+Pj @ react-dom.production.min.js:234
+di @ react-dom.production.min.js:168
+Nj @ react-dom.production.min.js:168
+sc @ react-dom.production.min.js:168
+gf @ react-dom.production.min.js:162
+(anonymous) @ react-dom.production.min.js:73
+unstable_runWithPriority @ react.production.min.js:24
+Za @ react-dom.production.min.js:73
+$g @ react-dom.production.min.js:73
+ja @ react-dom.production.min.js:73
+Pa @ react-dom.production.min.js:157
+Me @ react-dom.production.min.js:110
+fetchExcelData @ Inline Babel script:59
+await in fetchExcelData
+(anonymous) @ Inline Babel script:63
+Tj @ react-dom.production.min.js:179
+unstable_runWithPriority @ react.production.min.js:24
+Za @ react-dom.production.min.js:73
+Ra @ react-dom.production.min.js:178
+(anonymous) @ react-dom.production.min.js:178
+R @ react.production.min.js:16
+ua.port1.onmessage @ react.production.min.js:22
