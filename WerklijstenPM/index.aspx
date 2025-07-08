@@ -8,6 +8,7 @@
     <link href="styles.css" rel="stylesheet">
     <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Note: Using Babel in-browser for development. For production, consider precompiling JSX -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
 </head>
@@ -16,6 +17,38 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
+
+        // Error Boundary Component
+        class ErrorBoundary extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = { hasError: false, error: null };
+            }
+
+            static getDerivedStateFromError(error) {
+                return { hasError: true, error: error };
+            }
+
+            componentDidCatch(error, errorInfo) {
+                console.error('Error Boundary caught an error:', error, errorInfo);
+            }
+
+            render() {
+                if (this.state.hasError) {
+                    return (
+                        <div className="error-message">
+                            <h2>Er is een fout opgetreden</h2>
+                            <p>De applicatie heeft een onverwachte fout ondervonden.</p>
+                            <button onClick={() => window.location.reload()}>
+                                Pagina herladen
+                            </button>
+                        </div>
+                    );
+                }
+
+                return this.props.children;
+            }
+        }
 
         const VerkeersbordenWerklijst = () => {
             const [tableData, setTableData] = useState([]);
@@ -40,28 +73,52 @@
                         
                         // Convert ExcelJS worksheet to array format
                         const jsonData = [];
-                        firstSheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
-                            const rowData = [];
-                            row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
-                                let cellValue = cell.value || '';
-                                
-                                // Handle different cell types
-                                if (cell.value && typeof cell.value === 'object') {
-                                    if (cell.value.richText) {
-                                        cellValue = cell.value.richText.map(rt => rt.text).join('');
-                                    } else if (cell.value.formula) {
-                                        cellValue = cell.value.result || cell.value.formula;
-                                    } else if (cell.value.hyperlink) {
-                                        cellValue = cell.value.text || cell.value.hyperlink;
-                                    } else {
-                                        cellValue = cell.value.toString();
+                        try {
+                            firstSheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+                                const rowData = [];
+                                row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
+                                    let cellValue = cell.value || '';
+                                    
+                                    try {
+                                        // Handle different cell types
+                                        if (cell.value && typeof cell.value === 'object') {
+                                            if (cell.value.richText) {
+                                                cellValue = cell.value.richText.map(rt => rt.text).join('');
+                                            } else if (cell.value.formula) {
+                                                cellValue = cell.value.result || cell.value.formula;
+                                            } else if (cell.value.hyperlink) {
+                                                cellValue = cell.value.text || cell.value.hyperlink;
+                                            } else if (cell.value instanceof Date) {
+                                                // Handle Date objects properly
+                                                try {
+                                                    cellValue = cell.value.toLocaleDateString('nl-NL');
+                                                } catch (e) {
+                                                    cellValue = 'Invalid Date';
+                                                }
+                                            } else {
+                                                cellValue = cell.value.toString();
+                                            }
+                                        } else if (cell.value instanceof Date) {
+                                            // Handle Date values that aren't wrapped in an object
+                                            try {
+                                                cellValue = cell.value.toLocaleDateString('nl-NL');
+                                            } catch (e) {
+                                                cellValue = 'Invalid Date';
+                                            }
+                                        }
+                                    } catch (cellError) {
+                                        console.warn(`Error processing cell at row ${rowNumber}, col ${colNumber}:`, cellError);
+                                        cellValue = 'Error';
                                     }
-                                }
-                                
-                                rowData[colNumber - 1] = cellValue;
+                                    
+                                    rowData[colNumber - 1] = cellValue;
+                                });
+                                jsonData.push(rowData);
                             });
-                            jsonData.push(rowData);
-                        });
+                        } catch (processingError) {
+                            console.error("Error processing Excel data:", processingError);
+                            throw new Error(`Fout bij het verwerken van Excel-gegevens: ${processingError.message}`);
+                        }
                         
                         if(jsonData.length === 0){
                             throw new Error("Het Excel-bestand is leeg of kon niet correct worden gelezen.");
@@ -163,18 +220,39 @@
                                                 <tr key={rowIndex} className="table-row">
                                                     {row.map((cell, cellIndex) => (
                                                         <td key={cellIndex} className="table-cell">
-                                                            {typeof cell === "string" && cell.startsWith("http") ? (
-                                                                <a
-                                                                    href={cell}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="table-link"
-                                                                >
-                                                                    Bekijk link
-                                                                </a>
-                                                            ) : (
-                                                                cell
-                                                            )}
+                                                            {(() => {
+                                                                // Safety check for rendering cell values
+                                                                let displayValue = cell;
+                                                                
+                                                                // Handle null, undefined, or invalid values
+                                                                if (cell === null || cell === undefined) {
+                                                                    displayValue = '';
+                                                                } else if (cell instanceof Date) {
+                                                                    try {
+                                                                        displayValue = cell.toLocaleDateString('nl-NL');
+                                                                    } catch (e) {
+                                                                        displayValue = 'Invalid Date';
+                                                                    }
+                                                                } else if (typeof cell === 'object') {
+                                                                    displayValue = JSON.stringify(cell);
+                                                                }
+                                                                
+                                                                // Check if it's a URL
+                                                                if (typeof displayValue === "string" && displayValue.startsWith("http")) {
+                                                                    return (
+                                                                        <a
+                                                                            href={displayValue}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="table-link"
+                                                                        >
+                                                                            Bekijk link
+                                                                        </a>
+                                                                    );
+                                                                }
+                                                                
+                                                                return displayValue;
+                                                            })()}
                                                         </td>
                                                     ))}
                                                 </tr>
@@ -189,7 +267,12 @@
             );
         };
 
-        ReactDOM.render(<VerkeersbordenWerklijst />, document.getElementById("root"));
+        ReactDOM.render(
+            <ErrorBoundary>
+                <VerkeersbordenWerklijst />
+            </ErrorBoundary>, 
+            document.getElementById("root")
+        );
     </script>
 </body>
 </html>
