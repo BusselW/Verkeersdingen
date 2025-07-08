@@ -34,7 +34,7 @@ function convertWorksheetToHTML(worksheet) {
   html += '</table>';
   return html;
 }
-
+z
 // Gebruik CallPost.js om de RequestDigestHeader te verkrijgen
 CallPost.js({
   url: _spPageContextInfo.webAbsoluteUrl + "/_api/contextinfo",

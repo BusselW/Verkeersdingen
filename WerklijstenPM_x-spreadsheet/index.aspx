@@ -1,60 +1,28 @@
 <%@ Page Language="C#" %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Moderne lichtgewicht Excel spreadsheet viewer met x-spreadsheet voor verkeersborden werklijsten">
     <title>Verkeersborden Werklijst - x-spreadsheet</title>
     <link href="styles.css" rel="stylesheet">
-    <script src="https://unpkg.com/x-data-spreadsheet@1.1.9/dist/xspreadsheet.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <!-- x-spreadsheet CSS and JS -->
     <link rel="stylesheet" href="https://unpkg.com/x-data-spreadsheet@1.1.9/dist/xspreadsheet.css">
+    <script src="https://unpkg.com/x-data-spreadsheet@1.1.9/dist/xspreadsheet.js"></script>
+    
+    <!-- External Dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
-    <div class="page-wrapper">
-        <div class="container">
-            <header class="header">
-                <h1 class="title">Werklijst Verkeersborden - x-spreadsheet</h1>
-                <p class="description">
-                    Moderne, lightweight spreadsheet component met canvas rendering.
-                </p>
-                <div class="controls">
-                    <a
-                        href="https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1"
-                        class="download-icon"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Bewerk het Excel-bestand"
-                    ></a>
-                    <button id="loadBtn" class="load-btn">Herlaad Data</button>
-                    <button id="exportBtn" class="export-btn">Export JSON</button>
-                    <button id="clearBtn" class="clear-btn">Leeg Sheet</button>
-                </div>
-            </header>
-            
-            <div class="info-bar">
-                <span id="cellInfo">Cel: A1</span>
-                <span id="sheetInfo">Sheet: 1</span>
-                <span id="dataInfo">Rijen: 0, Kolommen: 0</span>
-            </div>
-            
-            <div id="loading" class="loading-indicator">
-                Spreadsheet wordt geladen...
-            </div>
-            
-            <div id="error" class="error-message" style="display: none;"></div>
-            
-            <div id="spreadsheet" class="spreadsheet-container"></div>
-        </div>
-    </div>
+    <div id="root"></div>
+    <script src="scripts.js"></script>
+</body>
+</html>
 
-    <script>
-        let xs = null;
-        let originalData = null;
-
-        // Initialize x-spreadsheet
-        function initializeSpreadsheet() {
             const options = {
                 mode: 'edit',
                 showToolbar: true,

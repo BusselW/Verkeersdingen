@@ -242,6 +242,8 @@ body {
     width: 100%;
     height: 100%;
     border-radius: 0 0 20px 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    background: white;
 }
 
 /* Override x-spreadsheet styles for better integration */
@@ -263,6 +265,18 @@ body {
 .x-spreadsheet .x-spreadsheet-toolbar .x-spreadsheet-item:hover {
     background: rgba(111, 66, 193, 0.1) !important;
     border-radius: 6px !important;
+}
+
+/* Enhanced canvas styling */
+.x-spreadsheet canvas {
+    border-radius: 0 0 20px 20px;
+}
+
+/* Modern loading state for x-spreadsheet */
+.loading-indicator p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #6c757d;
 }
 
 /* Success message styles */
@@ -371,4 +385,40 @@ body {
         margin: 10px;
         height: calc(100vh - 20px);
     }
+}
+
+/* Modern enhancements for x-spreadsheet implementation */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e3e3e3;
+    border-top: 4px solid #6f42c1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+.notification {
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid currentColor;
+}
+
+.export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.export-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Enhanced focus states for accessibility */
+.x-spreadsheet:focus-within {
+    box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.3);
 }

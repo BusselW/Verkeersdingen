@@ -1,23 +1,24 @@
 <%@ Page Language="C#" %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verkeersborden Werklijst - SpreadJS</title>
+    <meta name="description" content="Geavanceerde Excel viewer met SheetJS fallback en extra functies zoals sorteren, filteren en berekeningen">
+    <title>Verkeersborden Werklijst - SpreadJS Fallback</title>
     <link href="styles.css" rel="stylesheet">
-    <!-- Note: SpreadJS requires a commercial license for production use -->
-    <!-- Using SheetJS as fallback since SpreadJS CDN is not available -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    <!-- SheetJS as fallback since SpreadJS requires commercial license -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 
 <body>
     <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+    <script src="scripts.js"></script>
+</body>
+</html>
+
 
         const VerkeersbordenWerklijst = () => {
             const [tableData, setTableData] = useState([]);
