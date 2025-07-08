@@ -1,0 +1,9 @@
+index.aspx:127  Error initializing SpreadJS: ReferenceError: GC is not defined
+    at initializeSpreadJS (index.aspx:83:17)
+    at HTMLDocument.<anonymous> (index.aspx:316:13)
+initializeSpreadJS @ index.aspx:127
+(anonymous) @ index.aspx:316
+/favicon.ico:1 
+            
+            
+            Failed to load resource: the server responded with a status of 404 (Not Found)
