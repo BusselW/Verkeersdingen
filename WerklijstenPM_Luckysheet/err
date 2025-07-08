@@ -1,0 +1,9 @@
+core.js:90  Uncaught TypeError: Cannot read properties of undefined (reading 'total')
+    at Object.create (core.js:90:59)
+    at index.aspx:89:20
+create @ core.js:90
+(anonymous) @ index.aspx:89
+favicon.ico:1 
+            
+            
+            GET https://som.org.om.local/favicon.ico 404 (Not Found)
