@@ -372,16 +372,3 @@ body {
         height: calc(100vh - 20px);
     }
 }
-
-/* Dark mode support for x-spreadsheet */
-@media (prefers-color-scheme: dark) {
-    .x-spreadsheet {
-        background: #2d3748 !important;
-        color: #e2e8f0 !important;
-    }
-    
-    .x-spreadsheet .x-spreadsheet-toolbar {
-        background: #4a5568 !important;
-        border-color: #718096 !important;
-    }
-}
