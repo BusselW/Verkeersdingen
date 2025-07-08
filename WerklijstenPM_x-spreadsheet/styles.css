@@ -294,17 +294,18 @@ body {
 }
 
 .spreadsheet-container ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
+    background: #f8f9fa;
+    border-radius: 8px;
 }
 
 .spreadsheet-container ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
+    background: linear-gradient(135deg, #6f42c1, #6610f2);
+    border-radius: 8px;
+    border: 2px solid #f8f9fa;
 }
 
 .spreadsheet-container ::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+    background: linear-gradient(135deg, #6610f2, #563d7c);
 }
 
 /* Responsive design */
@@ -315,34 +316,60 @@ body {
     
     .container {
         height: calc(100vh - 20px);
+        border-radius: 15px;
     }
     
     .header {
-        padding: 15px 20px;
+        padding: 30px 20px;
     }
     
     .title {
-        font-size: 1.6em;
+        font-size: 2.2rem;
+    }
+    
+    .description {
+        font-size: 1rem;
     }
     
     .controls {
         flex-direction: column;
-        gap: 10px;
+        gap: 15px;
     }
     
     .load-btn, .export-btn, .clear-btn {
         width: 100%;
-        max-width: 150px;
+        max-width: 280px;
+    }
+    
+    .download-icon {
+        width: 48px;
+        height: 48px;
     }
     
     .info-bar {
         flex-direction: column;
-        gap: 5px;
-        padding: 10px 15px;
+        gap: 10px;
+        padding: 15px 20px;
     }
     
     .info-bar span {
-        font-size: 12px;
+        font-size: 13px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 25px 15px;
+    }
+    
+    .title {
+        font-size: 2rem;
+    }
+    
+    .container {
+        margin: 10px;
+        height: calc(100vh - 20px);
     }
 }
 
