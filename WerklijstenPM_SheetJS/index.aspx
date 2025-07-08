@@ -167,7 +167,7 @@
                         {!loading && !error && (
                             <React.Fragment>
                                 <div className="stats">
-                                    Rijen: {tableData.length} | Kolommen: {tableData[0]?.length || 0}
+                                    Rijen: {tableData.length} | Kolommen: {tableData[0] && tableData[0].length || 0}
                                 </div>
                                 <div className="top-scrollbar" ref={topScrollRef}>
                                     <div></div>
