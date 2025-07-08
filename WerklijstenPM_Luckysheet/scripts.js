@@ -4,11 +4,11 @@
  */
 
 class LuckysheetViewer {
-    constructor(containerId, excelUrl) {
+    constructor(containerId) {
         this.containerId = containerId;
-        this.excelUrl = excelUrl;
         this.isInitialized = false;
         this.currentData = null;
+        this.fileName = null;
         
         this.init();
     }
@@ -428,8 +428,7 @@ class LuckysheetViewer {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    const excelUrl = "https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1";
-    new LuckysheetViewer('root', excelUrl);
+    new LuckysheetViewer('root');
 });
 
 class LuckysheetViewer {
