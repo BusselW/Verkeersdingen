@@ -1,0 +1,39 @@
+/favicon.ico:1 
+            
+            
+            Failed to load resource: the server responded with a status of 404 (Not Found)
+react-dom.production.min.js:141  Error: Minified React error #31; visit https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=Invalid%20Date for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at ed (react-dom.production.min.js:84:408)
+    at react-dom.production.min.js:94:277
+    at U (react-dom.production.min.js:110:298)
+    at Pj (react-dom.production.min.js:234:357)
+    at di (react-dom.production.min.js:168:305)
+    at Nj (react-dom.production.min.js:168:236)
+    at sc (react-dom.production.min.js:168:96)
+    at gf (react-dom.production.min.js:162:109)
+    at react-dom.production.min.js:73:230
+    at unstable_runWithPriority (react.production.min.js:24:26)
+Ye @ react-dom.production.min.js:141
+react-dom.production.min.js:141  Error: Minified React error #31; visit https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=Invalid%20Date for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at ed (react-dom.production.min.js:84:408)
+    at react-dom.production.min.js:94:277
+    at U (react-dom.production.min.js:110:298)
+    at Pj (react-dom.production.min.js:234:357)
+    at di (react-dom.production.min.js:168:305)
+    at Nj (react-dom.production.min.js:168:236)
+    at sc (react-dom.production.min.js:168:96)
+    at gf (react-dom.production.min.js:162:109)
+    at react-dom.production.min.js:73:230
+    at unstable_runWithPriority (react.production.min.js:24:26)
+Ye @ react-dom.production.min.js:141
+react-dom.production.min.js:84  Uncaught (in promise) Error: Minified React error #31; visit https://reactjs.org/docs/error-decoder.html?invariant=31&args[]=Invalid%20Date for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    at ed (react-dom.production.min.js:84:408)
+    at react-dom.production.min.js:94:277
+    at U (react-dom.production.min.js:110:298)
+    at Pj (react-dom.production.min.js:234:357)
+    at di (react-dom.production.min.js:168:305)
+    at Nj (react-dom.production.min.js:168:236)
+    at sc (react-dom.production.min.js:168:96)
+    at gf (react-dom.production.min.js:162:109)
+    at react-dom.production.min.js:73:230
+    at unstable_runWithPriority (react.production.min.js:24:26)
