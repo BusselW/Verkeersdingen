@@ -79,28 +79,29 @@ This repository contains four different implementations of Excel file reading an
 
 ---
 
-### 4. 🏢 SpreadJS - `WerklijstenPM_SpreadJS/`
-**Best for: Enterprise applications requiring full Excel compatibility**
+### 4. 🏢 SpreadJS (Fallback) - `WerklijstenPM_SpreadJS/`
+**Best for: Enterprise-style interface with enhanced features**
 
 **Features:**
-- ✅ 100% Excel compatibility
-- ✅ Advanced formula engine
-- ✅ Professional themes and styling
+- ✅ Enterprise-style UI and theming
+- ✅ Zoom functionality (50% - 200%)
+- ✅ Multiple theme options
+- ✅ Excel export functionality
 - ✅ Auto-formatting capabilities
-- ✅ Zoom and view controls
-- ✅ Enterprise-grade performance
-- ✅ Complete Excel feature set
+- ✅ Enhanced toolbar with controls
+- ✅ Sheet navigation and statistics
+- ⚠️ Uses SheetJS as fallback (SpreadJS requires commercial license)
 
 **Pros:**
-- Enterprise-grade solution
-- Perfect Excel compatibility
-- Advanced features (charts, pivot tables, etc.)
-- Professional support available
+- Enterprise-grade interface design
+- Advanced zoom and theme controls
+- Professional appearance
+- Enhanced user experience
 
 **Cons:**
-- Commercial license required for production
-- Larger library size
-- More complex API
+- Actual SpreadJS requires commercial license
+- Currently uses SheetJS as fallback
+- Larger CSS footprint
 
 ---
 
