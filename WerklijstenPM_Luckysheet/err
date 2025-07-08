@@ -3,7 +3,7 @@ core.js:90  Uncaught TypeError: Cannot read properties of undefined (reading 'to
     at index.aspx:89:20
 create @ core.js:90
 (anonymous) @ index.aspx:89
-favicon.ico:1 
+/favicon.ico:1 
             
             
-            GET https://som.org.om.local/favicon.ico 404 (Not Found)
+            Failed to load resource: the server responded with a status of 404 (Not Found)
