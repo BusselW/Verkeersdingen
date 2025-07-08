@@ -1,0 +1,22 @@
+babel.min.js:2  Uncaught SyntaxError: Inline Babel script: Unexpected token (154:88)
+  152 |                             <React.Fragment>
+  153 |                                 <div className="stats">
+> 154 |                                     Rijen: {tableData.length} | Kolommen: {tableData[0]?.length || 0}
+      |                                                                                         ^
+  155 |                                 </div>
+  156 |                                 <div className="top-scrollbar" ref={topScrollRef}>
+  157 |                                     <div></div>
+    at J.raise (babel.min.js:7:10099)
+    at X.unexpected (babel.min.js:5:27476)
+    at te.parseExprAtom (babel.min.js:6:30787)
+    at t.parseExprAtom (babel.min.js:8:22540)
+    at te.parseExprSubscripts (babel.min.js:6:25684)
+    at te.parseMaybeUnary (babel.min.js:6:25267)
+    at te.parseExprOps (babel.min.js:6:23839)
+    at te.parseMaybeConditional (babel.min.js:6:23430)
+    at te.parseMaybeAssign (babel.min.js:6:22650)
+    at t.parseMaybeAssign (babel.min.js:8:12561)
+/favicon.ico:1 
+            
+            
+            Failed to load resource: the server responded with a status of 404 (Not Found)
