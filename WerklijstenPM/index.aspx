@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verkeersborden Werklijst</title>
-    <link href="styles.css" rel="stylesheet">
+    <link href="styles_new.css" rel="stylesheet">
     <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
     <!-- Note: Using Babel in-browser for development. For production, consider precompiling JSX -->
@@ -52,89 +52,116 @@
 
         const VerkeersbordenWerklijst = () => {
             const [tableData, setTableData] = useState([]);
-            const [loading, setLoading] = useState(true);
+            const [loading, setLoading] = useState(false);
             const [error, setError] = useState(null);
+            const [fileName, setFileName] = useState(null);
+            const fileInputRef = useRef(null);
 
             // Refs voor de scrollbars
             const topScrollRef = useRef(null);
             const tableContainerRef = useRef(null);
 
-            useEffect(() => {
-                const fetchExcelData = async () => {
+            const processExcelFile = async (file) => {
+                setLoading(true);
+                setError(null);
+                setFileName(file.name);
+
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const workbook = new ExcelJS.Workbook();
+                    await workbook.xlsx.load(arrayBuffer);
+                    const firstSheet = workbook.worksheets[0];
+                    
+                    // Convert ExcelJS worksheet to array format
+                    const jsonData = [];
                     try {
-                        const response = await fetch("https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1");
-                        if (!response.ok) {
-                             throw new Error(`Het ophalen van het bestand is mislukt met status: ${response.status}`);
-                        }
-                        const arrayBuffer = await response.arrayBuffer();
-                        const workbook = new ExcelJS.Workbook();
-                        await workbook.xlsx.load(arrayBuffer);
-                        const firstSheet = workbook.worksheets[0];
-                        
-                        // Convert ExcelJS worksheet to array format
-                        const jsonData = [];
-                        try {
-                            firstSheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
-                                const rowData = [];
-                                row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
-                                    let cellValue = cell.value || '';
-                                    
-                                    try {
-                                        // Handle different cell types
-                                        if (cell.value && typeof cell.value === 'object') {
-                                            if (cell.value.richText) {
-                                                cellValue = cell.value.richText.map(rt => rt.text).join('');
-                                            } else if (cell.value.formula) {
-                                                cellValue = cell.value.result || cell.value.formula;
-                                            } else if (cell.value.hyperlink) {
-                                                cellValue = cell.value.text || cell.value.hyperlink;
-                                            } else if (cell.value instanceof Date) {
-                                                // Handle Date objects properly
-                                                try {
-                                                    cellValue = cell.value.toLocaleDateString('nl-NL');
-                                                } catch (e) {
-                                                    cellValue = 'Invalid Date';
-                                                }
-                                            } else {
-                                                cellValue = cell.value.toString();
-                                            }
+                        firstSheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+                            const rowData = [];
+                            row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
+                                let cellValue = cell.value || '';
+                                
+                                try {
+                                    // Handle different cell types
+                                    if (cell.value && typeof cell.value === 'object') {
+                                        if (cell.value.richText) {
+                                            cellValue = cell.value.richText.map(rt => rt.text).join('');
+                                        } else if (cell.value.formula) {
+                                            cellValue = cell.value.result || cell.value.formula;
+                                        } else if (cell.value.hyperlink) {
+                                            cellValue = cell.value.text || cell.value.hyperlink;
                                         } else if (cell.value instanceof Date) {
-                                            // Handle Date values that aren't wrapped in an object
+                                            // Handle Date objects properly
                                             try {
                                                 cellValue = cell.value.toLocaleDateString('nl-NL');
                                             } catch (e) {
                                                 cellValue = 'Invalid Date';
                                             }
+                                        } else {
+                                            cellValue = cell.value.toString();
                                         }
-                                    } catch (cellError) {
-                                        console.warn(`Error processing cell at row ${rowNumber}, col ${colNumber}:`, cellError);
-                                        cellValue = 'Error';
+                                    } else if (cell.value instanceof Date) {
+                                        // Handle Date values that aren't wrapped in an object
+                                        try {
+                                            cellValue = cell.value.toLocaleDateString('nl-NL');
+                                        } catch (e) {
+                                            cellValue = 'Invalid Date';
+                                        }
                                     }
-                                    
-                                    rowData[colNumber - 1] = cellValue;
-                                });
-                                jsonData.push(rowData);
+                                } catch (cellError) {
+                                    console.warn(`Error processing cell at row ${rowNumber}, col ${colNumber}:`, cellError);
+                                    cellValue = 'Error';
+                                }
+                                
+                                rowData[colNumber - 1] = cellValue;
                             });
-                        } catch (processingError) {
-                            console.error("Error processing Excel data:", processingError);
-                            throw new Error(`Fout bij het verwerken van Excel-gegevens: ${processingError.message}`);
-                        }
-                        
-                        if(jsonData.length === 0){
-                            throw new Error("Het Excel-bestand is leeg of kon niet correct worden gelezen.");
-                        }
-
-                        setTableData(jsonData);
-                    } catch (e) {
-                        console.error("Fout bij het ophalen of verwerken van het Excel-bestand:", e);
-                        setError(`Kon de gegevens niet laden. Details: ${e.message}`);
-                    } finally {
-                        setLoading(false);
+                            jsonData.push(rowData);
+                        });
+                    } catch (processingError) {
+                        console.error("Error processing Excel data:", processingError);
+                        throw new Error(`Fout bij het verwerken van Excel-gegevens: ${processingError.message}`);
                     }
-                };
+                    
+                    if(jsonData.length === 0){
+                        throw new Error("Het Excel-bestand is leeg of kon niet correct worden gelezen.");
+                    }
 
-                fetchExcelData();
-            }, []);
+                    setTableData(jsonData);
+                } catch (e) {
+                    console.error("Fout bij het verwerken van het Excel-bestand:", e);
+                    setError(`Kon de gegevens niet laden. Details: ${e.message}`);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleFileUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                        file.name.endsWith('.xlsx')) {
+                        processExcelFile(file);
+                    } else {
+                        setError('Selecteer een geldig .xlsx bestand');
+                    }
+                }
+            };
+
+            const handleDrop = (event) => {
+                event.preventDefault();
+                const file = event.dataTransfer.files[0];
+                if (file) {
+                    if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                        file.name.endsWith('.xlsx')) {
+                        processExcelFile(file);
+                    } else {
+                        setError('Selecteer een geldig .xlsx bestand');
+                    }
+                }
+            };
+
+            const handleDragOver = (event) => {
+                event.preventDefault();
+            };
             
             // Effect voor het synchroniseren van de scrollbars
             useEffect(() => {
@@ -182,23 +209,58 @@
                 <div className="page-wrapper">
                     <div className="container">
                         <header className="header">
-                            <h1 className="title">Werklijst Verkeersborden</h1>
+                            <h1 className="title">Excel Bestand Viewer</h1>
                             <p className="description">
-                                Bekijk hieronder de gegevens uit het opgegeven Excel-bestand. Klik op het icoon om het Excelbestand te bewerken en de data op deze pagina te wijzigen.
+                                Upload een .xlsx bestand om de inhoud in een tabel te bekijken. Sleep het bestand naar het upload gebied of klik om een bestand te selecteren.
                             </p>
-                            <a
-                                href="https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1"
-                                className="download-icon"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title="Bewerk het Excel-bestand"
-                            ></a>
                         </header>
                         
-                        {loading && <div className="loading-indicator">Gegevens laden...</div>}
+                        {!tableData.length && !loading && (
+                            <div 
+                                className="upload-area"
+                                onDrop={handleDrop}
+                                onDragOver={handleDragOver}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <div className="upload-content">
+                                    <div className="upload-icon">📄</div>
+                                    <h3>Sleep een .xlsx bestand hier naartoe</h3>
+                                    <p>of klik om een bestand te selecteren</p>
+                                    <button className="upload-button">Bestand Selecteren</button>
+                                </div>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".xlsx"
+                                    onChange={handleFileUpload}
+                                    style={{ display: 'none' }}
+                                />
+                            </div>
+                        )}
+
+                        {fileName && (
+                            <div className="file-info">
+                                <span>Geladen bestand: <strong>{fileName}</strong></span>
+                                <button 
+                                    className="new-file-button"
+                                    onClick={() => {
+                                        setTableData([]);
+                                        setFileName(null);
+                                        setError(null);
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.value = '';
+                                        }
+                                    }}
+                                >
+                                    Nieuw Bestand
+                                </button>
+                            </div>
+                        )}
+                        
+                        {loading && <div className="loading-indicator">Bestand verwerken...</div>}
                         {error && <div className="error-message">{error}</div>}
 
-                        {!loading && !error && (
+                        {!loading && !error && tableData.length > 0 && (
                             <React.Fragment>
                                 <div className="top-scrollbar" ref={topScrollRef}>
                                     <div></div>
