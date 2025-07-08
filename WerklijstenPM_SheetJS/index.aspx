@@ -8,7 +8,7 @@
     <link href="styles.css" rel="stylesheet">
     <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
@@ -167,7 +167,7 @@
                         {!loading && !error && (
                             <React.Fragment>
                                 <div className="stats">
-                                    Rijen: {tableData.length} | Kolommen: {tableData[0]?.length || 0}
+                                    Rijen: {tableData.length} | Kolommen: {tableData[0] ? tableData[0].length : 0}
                                 </div>
                                 <div className="top-scrollbar" ref={topScrollRef}>
                                     <div></div>
