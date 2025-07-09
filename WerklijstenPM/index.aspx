@@ -23,7 +23,7 @@
                     <span class="btn-icon">&#128259;</span>
                     <span id="loadingText">Herlaad Data</span>
                 </button>
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()" style="margin-left: 10px;">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()" style="margin-left: 10px; display: none;">
                     <span class="btn-icon">&#128194;</span>
                     Ander Bestand
                 </button>
@@ -33,7 +33,7 @@
         <div id="fileInfo" class="file-info-bar" style="display: none;">
             <span id="fileName" class="file-name"></span>
             <span id="dataCount" class="data-count"></span>
-            <button class="clear-btn" onclick="clearData()">Wissen</button>
+            <button class="clear-btn" onclick="clearData()" style="display: none;">Wissen</button>
         </div>
 
         <div id="controlsBar" class="controls-bar" style="display: none;">
@@ -245,7 +245,7 @@
             filteredData = [...allData];
             
             // Update UI
-            document.getElementById('fileName').innerHTML = `&#128196; ${fileName}`;
+            document.getElementById('fileName').innerHTML = `&#128196; <a href="${EXCEL_URL}" target="_blank" rel="noopener noreferrer" style="color: #ff6b35; text-decoration: none; font-weight: 600;">${fileName}</a>`;
             document.getElementById('dataCount').textContent = `${allData.length} records geladen (A1:W6)`;
             
             showLoading(false);
@@ -300,18 +300,33 @@
             const headerRow = document.createElement('tr');
             const headers = Object.keys(filteredData[0]).filter(key => !key.startsWith('_'));
             
-            headers.forEach(header => {
+            headers.forEach((header, index) => {
                 const th = document.createElement('th');
                 th.textContent = header;
                 th.className = 'sortable';
                 th.onclick = () => handleSort(header);
                 
-                const indicator = document.createElement('span');
-                indicator.className = 'sort-indicator';
-                indicator.innerHTML = sortConfig.key === header 
-                    ? (sortConfig.direction === 'asc' ? '&#8593;' : '&#8595;') 
-                    : '&#8597;';
-                th.appendChild(indicator);
+                // Merge cells D1:W1 (columns 3 to end, assuming 0-indexed)
+                if (index === 3) {
+                    th.colSpan = headers.length - 3; // Span from column D to the end
+                    th.textContent = 'WERKLIJSTEN';
+                    th.style.textAlign = 'center';
+                    th.style.fontWeight = 'bold';
+                    th.onclick = null; // Remove sorting for merged header
+                } else if (index > 3) {
+                    return; // Skip remaining headers as they're merged
+                }
+                
+                if (index <= 3) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'sort-indicator';
+                    if (index !== 3) { // Don't add sort indicator to merged cell
+                        indicator.innerHTML = sortConfig.key === header 
+                            ? (sortConfig.direction === 'asc' ? '&#8593;' : '&#8595;') 
+                            : '&#8597;';
+                        th.appendChild(indicator);
+                    }
+                }
                 
                 headerRow.appendChild(th);
             });
@@ -323,9 +338,14 @@
                 const tr = document.createElement('tr');
                 tr.style.backgroundColor = row._groupColor || '#FFFFFF';
                 
-                headers.forEach(header => {
+                headers.forEach((header, index) => {
                     const td = document.createElement('td');
                     const value = row[header];
+                    
+                    // Make column A (first column) bold
+                    if (index === 0) {
+                        td.style.fontWeight = 'bold';
+                    }
                     
                     if (value && value.toString().startsWith('http')) {
                         const link = document.createElement('a');
