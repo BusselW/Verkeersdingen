@@ -20,11 +20,11 @@
             <div class="header-actions">
                 <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
                 <button class="upload-btn" id="reloadBtn">
-                    <span class="btn-icon">🔄</span>
+                    <span class="btn-icon">&#128259;</span>
                     <span id="loadingText">Herlaad Data</span>
                 </button>
                 <button class="upload-btn" onclick="document.getElementById('fileInput').click()" style="margin-left: 10px;">
-                    <span class="btn-icon">📂</span>
+                    <span class="btn-icon">&#128194;</span>
                     Ander Bestand
                 </button>
             </div>
@@ -39,7 +39,7 @@
         <div id="controlsBar" class="controls-bar" style="display: none;">
             <div class="search-container">
                 <input type="text" id="searchInput" placeholder="Zoeken in alle kolommen..." class="search-input">
-                <span class="search-icon">🔍</span>
+                <span class="search-icon">&#128269;</span>
             </div>
             <div id="resultsInfo" class="results-info"></div>
         </div>
@@ -50,12 +50,12 @@
         </div>
 
         <div id="errorState" class="error-state" style="display: none;">
-            <div class="error-icon">⚠️</div>
+            <div class="error-icon">&#9888;</div>
             <p id="errorMessage"></p>
         </div>
 
         <div id="emptyState" class="empty-state">
-            <div class="empty-icon">📊</div>
+            <div class="empty-icon">&#128202;</div>
             <h3>Geen data geladen</h3>
             <p>Importeer een Excel bestand om aan de slag te gaan</p>
         </div>
@@ -245,7 +245,7 @@
             filteredData = [...allData];
             
             // Update UI
-            document.getElementById('fileName').textContent = `📄 ${fileName}`;
+            document.getElementById('fileName').innerHTML = `&#128196; ${fileName}`;
             document.getElementById('dataCount').textContent = `${allData.length} records geladen (A1:W6)`;
             
             showLoading(false);
@@ -308,9 +308,9 @@
                 
                 const indicator = document.createElement('span');
                 indicator.className = 'sort-indicator';
-                indicator.textContent = sortConfig.key === header 
-                    ? (sortConfig.direction === 'asc' ? '↑' : '↓') 
-                    : '↕️';
+                indicator.innerHTML = sortConfig.key === header 
+                    ? (sortConfig.direction === 'asc' ? '&#8593;' : '&#8595;') 
+                    : '&#8597;';
                 th.appendChild(indicator);
                 
                 headerRow.appendChild(th);
