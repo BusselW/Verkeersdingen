@@ -1,0 +1,20 @@
+babel.min.js:24  You are using the in-browser Babel transformer. Be sure to precompile your scripts for production - https://babeljs.io/docs/setup/
+u @ babel.min.js:24
+babel.min.js:2  Uncaught SyntaxError: Inline Babel script: Unexpected token (206:68)
+  204 |                                 onDrop={handleDrop}
+  205 |                                 onDragOver={handleDragOver}
+> 206 |                                 onClick={() => fileInputRef.current?.click()}
+      |                                                                     ^
+  207 |                             >
+  208 |                                 <div className="upload-content">
+  209 |                                     <div className="upload-icon">ðŸ“Š</div>
+    at J.raise (babel.min.js:7:10099)
+    at X.unexpected (babel.min.js:5:27476)
+    at te.parseExprAtom (babel.min.js:6:30787)
+    at t.parseExprAtom (babel.min.js:8:22540)
+    at te.parseExprSubscripts (babel.min.js:6:25684)
+    at te.parseMaybeUnary (babel.min.js:6:25267)
+    at te.parseExprOps (babel.min.js:6:23839)
+    at te.parseMaybeConditional (babel.min.js:6:23430)
+    at te.parseMaybeAssign (babel.min.js:6:22650)
+    at t.parseMaybeAssign (babel.min.js:8:12561)
