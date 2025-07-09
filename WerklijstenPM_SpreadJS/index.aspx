@@ -63,6 +63,13 @@
             </table>
         </div>
 
+        <div id="groupsLegend" class="groups-legend" style="display: none;">
+            <h3 class="legend-title">Groepen Overzicht</h3>
+            <div id="groupsGrid" class="groups-grid">
+                <!-- Groups will be populated here -->
+            </div>
+        </div>
+
         <div id="pagination" class="pagination" style="display: none;">
             <button id="prevBtn" class="pagination-btn">← Vorige</button>
             <div id="paginationInfo" class="pagination-info"></div>
@@ -74,9 +81,19 @@
         // Same JavaScript implementation as other versions
         let currentData = [];
         let filteredData = [];
+        let groups = [];
         let currentPage = 1;
         const itemsPerPage = 50;
         let sortConfig = { key: null, direction: 'asc' };
+
+        // Pastel colors for groups
+        const groupColors = {
+            'A': '#FFE5E5', // Light red
+            'B': '#E5F3FF', // Light blue
+            'C': '#E5FFE5', // Light green
+            'D': '#FFF5E5', // Light orange
+            'E': '#F0E5FF', // Light purple
+        };
 
         // SharePoint Excel file URL
         const EXCEL_URL = "https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1";
@@ -110,10 +127,20 @@
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     
+                    // Get main data from A1:W6
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
                         header: 1,
                         defval: '',
-                        blankrows: false
+                        blankrows: true,
+                        range: 'A1:W6'
+                    });
+
+                    // Get group data from A9:C13
+                    const groupData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1,
+                        defval: '',
+                        blankrows: false,
+                        range: 'A9:C13'
                     });
 
                     if (jsonData.length === 0) {
@@ -121,24 +148,7 @@
                         return;
                     }
 
-                    const headers = jsonData[0];
-                    const rows = jsonData.slice(1).map(row => {
-                        const obj = {};
-                        headers.forEach((header, index) => {
-                            obj[header || `Col${index + 1}`] = row[index] || '';
-                        });
-                        return obj;
-                    });
-
-                    currentData = rows;
-                    filteredData = [...currentData];
-                    
-                    document.getElementById('fileName').textContent = `📄 ${file.name}`;
-                    document.getElementById('dataCount').textContent = `${currentData.length} records geladen`;
-                    
-                    showLoading(false);
-                    showData();
-                    updatePagination();
+                    processData(jsonData, groupData, file.name);
                     
                 } catch (error) {
                     showError(`Kon het bestand niet laden: ${error.message}`);
@@ -204,7 +214,7 @@
             if (pageData.length === 0) return;
             
             const headerRow = document.createElement('tr');
-            const headers = Object.keys(pageData[0]);
+            const headers = Object.keys(pageData[0]).filter(key => !key.startsWith('_'));
             
             headers.forEach(header => {
                 const th = document.createElement('th');
@@ -226,6 +236,7 @@
             
             pageData.forEach(row => {
                 const tr = document.createElement('tr');
+                tr.style.backgroundColor = row._groupColor || '#FFFFFF';
                 
                 headers.forEach(header => {
                     const td = document.createElement('td');
@@ -305,10 +316,20 @@
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
                     
+                    // Get main data from A1:W6
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
                         header: 1,
                         defval: '',
-                        blankrows: false
+                        blankrows: true,
+                        range: 'A1:W6'
+                    });
+
+                    // Get group data from A9:C13
+                    const groupData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1,
+                        defval: '',
+                        blankrows: false,
+                        range: 'A9:C13'
                     });
 
                     if (jsonData.length === 0) {
@@ -316,24 +337,7 @@
                         return;
                     }
 
-                    const headers = jsonData[0];
-                    const rows = jsonData.slice(1).map(row => {
-                        const obj = {};
-                        headers.forEach((header, index) => {
-                            obj[header || `Col${index + 1}`] = row[index] || '';
-                        });
-                        return obj;
-                    });
-
-                    currentData = rows;
-                    filteredData = [...currentData];
-                    
-                    document.getElementById('fileName').textContent = `📄 Werklijsten MAPS PM Verkeersborden.xlsx`;
-                    document.getElementById('dataCount').textContent = `${currentData.length} records geladen`;
-                    
-                    showLoading(false);
-                    showData();
-                    updatePagination();
+                    processData(jsonData, groupData, 'Werklijsten MAPS PM Verkeersborden.xlsx');
                 })
                 .catch(error => {
                     showError(`Kon het bestand niet laden: ${error.message}`);
@@ -341,14 +345,96 @@
                 });
         }
 
+        function processData(jsonData, groupData, fileName) {
+            // Process groups first (A9:C13)
+            groups = [];
+            groupData.forEach(row => {
+                if (row[0] && row[0].toString().trim()) {
+                    const groupLetter = row[0].toString().trim().slice(-1); // Get last character
+                    groups.push({
+                        letter: groupLetter,
+                        name: row[0] || '',
+                        members: row[1] || '',
+                        contact: row[2] || '',
+                        color: groupColors[groupLetter] || '#FFFFFF'
+                    });
+                }
+            });
+
+            // Process main data (A1:W6)
+            const headers = jsonData[0] || [];
+            currentData = [];
+            
+            // Process data rows (rows 2-6, which are indices 1-5 in the array)
+            for (let i = 1; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                const rowObj = {};
+                
+                headers.forEach((header, index) => {
+                    rowObj[header || `Col${index + 1}`] = row[index] || '';
+                });
+                
+                // Match group colors based on column A value (first column)
+                const columnAValue = row[0] ? row[0].toString().trim() : '';
+                const matchingGroup = groups.find(group => group.letter === columnAValue);
+                rowObj._groupColor = matchingGroup ? matchingGroup.color : '#FFFFFF';
+                rowObj._groupLetter = columnAValue;
+                
+                currentData.push(rowObj);
+            }
+
+            filteredData = [...currentData];
+            
+            // Update UI
+            document.getElementById('fileName').textContent = `📄 ${fileName}`;
+            document.getElementById('dataCount').textContent = `${currentData.length} records geladen (A1:W6)`;
+            
+            showLoading(false);
+            showData();
+            updatePagination();
+            updateGroups();
+        }
+
+        function updateGroups() {
+            const groupsGrid = document.getElementById('groupsGrid');
+            groupsGrid.innerHTML = '';
+            
+            groups.forEach(group => {
+                const groupCard = document.createElement('div');
+                groupCard.className = 'group-card';
+                groupCard.style.backgroundColor = group.color;
+                
+                groupCard.innerHTML = `
+                    <div class="group-header">
+                        <span class="group-name">${group.name}</span>
+                        <span class="group-letter">${group.letter}</span>
+                    </div>
+                    <div class="group-details">
+                        <div class="group-row">
+                            <strong>Leden:</strong> ${group.members}
+                        </div>
+                        <div class="group-row">
+                            <strong>Contactpersoon:</strong> ${group.contact}
+                        </div>
+                    </div>
+                `;
+                
+                groupsGrid.appendChild(groupCard);
+            });
+            
+            document.getElementById('groupsLegend').style.display = groups.length > 0 ? 'block' : 'none';
+        }
+
         function clearData() {
             currentData = [];
             filteredData = [];
+            groups = [];
             currentPage = 1;
             
             document.getElementById('fileInfo').style.display = 'none';
             document.getElementById('controlsBar').style.display = 'none';
             document.getElementById('tableContainer').style.display = 'none';
+            document.getElementById('groupsLegend').style.display = 'none';
             document.getElementById('pagination').style.display = 'none';
             document.getElementById('emptyState').style.display = 'flex';
             document.getElementById('searchInput').value = '';
