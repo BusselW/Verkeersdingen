@@ -22,7 +22,7 @@ html, body {
 
 /* Header */
 .dashboard-header {
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     padding: 2rem 3rem;
     display: flex;
     justify-content: space-between;
@@ -106,7 +106,7 @@ html, body {
 
 .file-name {
     font-weight: 600;
-    color: #ff6b35;
+    color: #2563eb;
 }
 
 .data-count {
@@ -115,9 +115,9 @@ html, body {
 }
 
 .clear-btn {
-    background: rgba(255, 107, 53, 0.2);
-    border: 1px solid rgba(255, 107, 53, 0.4);
-    color: #ff6b35;
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: #dc2626;
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
@@ -126,7 +126,7 @@ html, body {
 }
 
 .clear-btn:hover {
-    background: rgba(255, 107, 53, 0.3);
+    background: rgba(220, 38, 38, 0.2);
     transform: translateY(-1px);
 }
 
@@ -160,8 +160,8 @@ html, body {
 
 .search-input:focus {
     outline: none;
-    border-color: #ff6b35;
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
     background: rgba(255, 255, 255, 1);
 }
 
@@ -199,7 +199,7 @@ html, body {
     width: 40px;
     height: 40px;
     border: 4px solid rgba(33, 37, 41, 0.1);
-    border-top: 4px solid #ff6b35;
+    border-top: 4px solid #2563eb;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 1rem;
@@ -252,7 +252,7 @@ html, body {
 }
 
 .modern-table thead {
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -301,7 +301,7 @@ html, body {
 }
 
 .modern-table tbody tr:hover {
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(37, 99, 235, 0.1);
     transform: translateX(5px);
 }
 
@@ -321,18 +321,18 @@ html, body {
 }
 
 .table-link {
-    color: #ff6b35;
+    color: #2563eb;
     text-decoration: none;
     font-weight: 600;
     padding: 0.3rem 0.8rem;
-    background: rgba(255, 107, 53, 0.2);
+    background: rgba(37, 99, 235, 0.1);
     border-radius: 6px;
     transition: all 0.3s ease;
     display: inline-block;
 }
 
 .table-link:hover {
-    background: rgba(255, 107, 53, 0.3);
+    background: rgba(37, 99, 235, 0.2);
     transform: translateY(-1px);
 }
 
@@ -360,8 +360,8 @@ html, body {
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background: rgba(255, 107, 53, 0.2);
-    border-color: rgba(255, 107, 53, 0.4);
+    background: rgba(37, 99, 235, 0.1);
+    border-color: rgba(37, 99, 235, 0.3);
     transform: translateY(-1px);
 }
 
@@ -448,12 +448,12 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 107, 53, 0.6);
+    background: rgba(37, 99, 235, 0.6);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 107, 53, 0.8);
+    background: rgba(37, 99, 235, 0.8);
 }
 
 /* Focus styles for accessibility */
@@ -461,7 +461,7 @@ html, body {
 .search-input:focus,
 .pagination-btn:focus,
 .clear-btn:focus {
-    outline: 2px solid #ff6b35;
+    outline: 2px solid #2563eb;
     outline-offset: 2px;
 }
 
@@ -496,7 +496,7 @@ html, body {
     color: #212529;
     margin-bottom: 1rem;
     text-align: center;
-    border-bottom: 2px solid #ff6b35;
+    border-bottom: 2px solid #2563eb;
     padding-bottom: 0.5rem;
 }
 
@@ -537,7 +537,7 @@ html, body {
 }
 
 .group-letter {
-    background: rgba(255, 107, 53, 0.8);
+    background: rgba(37, 99, 235, 0.9);
     color: white;
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
@@ -559,7 +559,7 @@ html, body {
 }
 
 .group-row strong {
-    color: #ff6b35;
+    color: #2563eb;
     font-weight: 600;
 }
 

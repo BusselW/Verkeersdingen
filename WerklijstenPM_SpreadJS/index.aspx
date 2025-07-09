@@ -34,7 +34,7 @@
 
         <div id="controlsBar" class="controls-bar" style="display: none;">
             <div class="search-container">
-                <input type="text" id="searchInput" placeholder="Zoeken in alle kolommen..." class="search-input">
+                <input type="text" id="searchInput" placeholder="Filter kolommen..." class="search-input">
                 <span class="search-icon">&#128269;</span>
             </div>
             <div id="resultsInfo" class="results-info"></div>
@@ -85,14 +85,15 @@
         let currentPage = 1;
         const itemsPerPage = 50;
         let sortConfig = { key: null, direction: 'asc' };
+        let visibleColumns = []; // Track which columns should be visible
 
-        // Pastel colors for groups
+        // Professional muted colors for groups
         const groupColors = {
-            'A': '#FFE5E5', // Light red
-            'B': '#E5F3FF', // Light blue
-            'C': '#E5FFE5', // Light green
-            'D': '#FFF5E5', // Light orange
-            'E': '#F0E5FF', // Light purple
+            'A': '#f8fafc', // Light gray
+            'B': '#f1f5f9', // Slate
+            'C': '#f0f9ff', // Light blue
+            'D': '#f0fdf4', // Light green
+            'E': '#fefce8', // Light yellow
         };
 
         // SharePoint Excel file URL
@@ -162,13 +163,15 @@
         function handleSearch() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             
+            if (currentData.length === 0) return;
+            
+            const allHeaders = Object.keys(currentData[0]).filter(key => !key.startsWith('_'));
+            
             if (searchTerm === '') {
-                filteredData = [...currentData];
+                visibleColumns = [...allHeaders];
             } else {
-                filteredData = currentData.filter(row => 
-                    Object.values(row).some(value => 
-                        value.toString().toLowerCase().includes(searchTerm)
-                    )
+                visibleColumns = allHeaders.filter(header => 
+                    header.toLowerCase().includes(searchTerm)
                 );
             }
             
@@ -214,7 +217,8 @@
             if (pageData.length === 0) return;
             
             const headerRow = document.createElement('tr');
-            const headers = Object.keys(pageData[0]).filter(key => !key.startsWith('_'));
+            const allHeaders = Object.keys(pageData[0]).filter(key => !key.startsWith('_'));
+            const headers = visibleColumns.length > 0 ? visibleColumns : allHeaders;
             
             headers.forEach((header, index) => {
                 const th = document.createElement('th');
@@ -222,26 +226,25 @@
                 th.className = 'sortable';
                 th.onclick = () => handleSort(header);
                 
-                // Merge cells D1:W1 (columns 3 to end, assuming 0-indexed)
-                if (index === 3) {
-                    th.colSpan = headers.length - 3; // Span from column D to the end
+                // Merge cells D1:W1 (columns 3 to end, assuming 0-indexed) - only if we have enough columns
+                const originalIndex = allHeaders.indexOf(header);
+                if (originalIndex === 3 && headers.length - index > 1) {
+                    th.colSpan = headers.length - index; // Span from column D to the end
                     th.textContent = 'WERKLIJSTEN';
                     th.style.textAlign = 'center';
                     th.style.fontWeight = 'bold';
                     th.onclick = null; // Remove sorting for merged header
-                } else if (index > 3) {
+                } else if (originalIndex > 3 && allHeaders.indexOf(headers[index-1]) === 3) {
                     return; // Skip remaining headers as they're merged
                 }
                 
-                if (index <= 3) {
-                    const indicator = document.createElement('span');
-                    indicator.className = 'sort-indicator';
-                    if (index !== 3) { // Don't add sort indicator to merged cell
-                        indicator.innerHTML = sortConfig.key === header 
-                            ? (sortConfig.direction === 'asc' ? '&#8593;' : '&#8595;') 
-                            : '&#8597;';
-                        th.appendChild(indicator);
-                    }
+                const indicator = document.createElement('span');
+                indicator.className = 'sort-indicator';
+                if (originalIndex !== 3 || headers.length - index === 1) { // Don't add sort indicator to merged cell
+                    indicator.innerHTML = sortConfig.key === header 
+                        ? (sortConfig.direction === 'asc' ? '&#8593;' : '&#8595;') 
+                        : '&#8597;';
+                    th.appendChild(indicator);
                 }
                 
                 headerRow.appendChild(th);
@@ -257,8 +260,10 @@
                     const td = document.createElement('td');
                     const value = row[header];
                     
-                    // Make column A (first column) bold
-                    if (index === 0) {
+                    // Make column A (first column) bold - check if this is the original first column
+                    const allHeaders = Object.keys(row).filter(key => !key.startsWith('_'));
+                    const originalIndex = allHeaders.indexOf(header);
+                    if (originalIndex === 0) {
                         td.style.fontWeight = 'bold';
                     }
                     
@@ -280,8 +285,9 @@
                 tbody.appendChild(tr);
             });
             
+            const allHeaders = Object.keys(currentData[0] || {}).filter(key => !key.startsWith('_'));
             document.getElementById('resultsInfo').textContent = 
-                `${filteredData.length} van ${currentData.length} records`;
+                `${headers.length} van ${allHeaders.length} kolommen`;
         }
 
         function updatePagination() {
@@ -405,6 +411,10 @@
 
             filteredData = [...currentData];
             
+            // Initialize visible columns
+            const allHeaders = Object.keys(currentData[0] || {}).filter(key => !key.startsWith('_'));
+            visibleColumns = [...allHeaders];
+            
             // Update UI
             document.getElementById('fileName').innerHTML = `&#128196; <a href="${EXCEL_URL}" target="_blank" rel="noopener noreferrer" style="color: #ff6b35; text-decoration: none; font-weight: 600;">${fileName}</a>`;
             document.getElementById('dataCount').textContent = `${currentData.length} records geladen (A1:W6)`;
@@ -434,7 +444,7 @@
                             <strong>Leden:</strong> ${group.members}
                         </div>
                         <div class="group-row">
-                            <strong>Contactpersoon:</strong> ${group.contact}
+                            ${group.contact}
                         </div>
                     </div>
                 `;
@@ -450,6 +460,7 @@
             filteredData = [];
             groups = [];
             currentPage = 1;
+            visibleColumns = [];
             
             document.getElementById('fileInfo').style.display = 'none';
             document.getElementById('controlsBar').style.display = 'none';
