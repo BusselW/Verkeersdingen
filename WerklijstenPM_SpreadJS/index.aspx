@@ -4,307 +4,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Upload en bekijk Excel bestanden met SpreadJS fallback - moderne spreadsheet viewer">
-    <title>Verkeersdingen Werklijst - SpreadJS Viewer</title>
+    <title>Verkeersdingen Werklijst Dashboard - SpreadJS</title>
     <link href="styles.css" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
-    
-    <!-- SheetJS as fallback since SpreadJS requires commercial license -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
-    <div id="root"></div>
-    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        
-        const VerkeersbordenWerklijst = () => {
-            const [tableData, setTableData] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [error, setError] = useState(null);
-            const [sheetNames, setSheetNames] = useState([]);
-            const [currentSheet, setCurrentSheet] = useState(0);
-            const [zoom, setZoom] = useState(1);
-            const [theme, setTheme] = useState('default');
-
-            // Refs voor de scrollbars
-            const topScrollRef = useRef(null);
-            const tableContainerRef = useRef(null);
-
-            useEffect(() => {
-                const fetchExcelData = async () => {
-                    try {
-                        const response = await fetch("https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1");
-                        if (!response.ok) {
-                             throw new Error(`Het ophalen van het bestand is mislukt met status: ${response.status}`);
-                        }
-                        
-                        const arrayBuffer = await response.arrayBuffer();
-                        const data = new Uint8Array(arrayBuffer);
-                        const workbook = XLSX.read(data, { 
-                            type: "array",
-                            cellDates: true,
-                            cellNF: false,
-                            cellText: false
-                        });
-
-                        // Store all sheet names
-                        setSheetNames(workbook.SheetNames);
-                        
-                        // Process the current sheet
-                        const worksheet = workbook.Sheets[workbook.SheetNames[currentSheet]];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-                            header: 1,
-                            defval: '',
-                            blankrows: true
-                        });
-                        
-                        if(jsonData.length === 0){
-                            throw new Error("Het Excel-bestand is leeg of kon niet correct worden gelezen.");
-                        }
-
-                        setTableData(jsonData);
-                    } catch (e) {
-                        console.error("Fout bij het ophalen of verwerken van het Excel-bestand:", e);
-                        setError(`Kon de gegevens niet laden. Details: ${e.message}`);
-                    } finally {
-                        setLoading(false);
-                    }
-                };
-
-                fetchExcelData();
-            }, [currentSheet]);
+    <div class="dashboard">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1 class="dashboard-title">Verkeersdingen Werklijst</h1>
+                <p class="dashboard-subtitle">SpreadJS Implementation - Enterprise spreadsheet oplossing</p>
+            </div>
             
-            // Effect voor het synchroniseren van de scrollbars
-            useEffect(() => {
-                const topScroll = topScrollRef.current;
-                const tableContainer = tableContainerRef.current;
-                
-                if (!topScroll || !tableContainer) return;
-                
-                const topScrollContent = topScroll.querySelector('div');
-                const dataTable = tableContainer.querySelector('.data-table');
-                
-                if (!topScrollContent || !dataTable) return;
+            <div class="header-actions">
+                <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <span class="btn-icon">📂</span>
+                    Excel Importeren
+                </button>
+            </div>
+        </header>
 
-                const setWidths = () => {
-                  topScrollContent.style.width = `${dataTable.offsetWidth}px`;
-                };
+        <div id="fileInfo" class="file-info-bar" style="display: none;">
+            <span id="fileName" class="file-name"></span>
+            <span id="dataCount" class="data-count"></span>
+            <button class="clear-btn" onclick="clearData()">Wissen</button>
+        </div>
 
-                const handleTopScroll = () => {
-                    tableContainer.scrollLeft = topScroll.scrollLeft;
-                };
+        <div id="controlsBar" class="controls-bar" style="display: none;">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Zoeken in alle kolommen..." class="search-input">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div id="resultsInfo" class="results-info"></div>
+        </div>
 
-                const handleTableScroll = () => {
-                    topScroll.scrollLeft = tableContainer.scrollLeft;
-                };
+        <div id="loadingState" class="loading-state" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Bestand wordt verwerkt...</p>
+        </div>
 
-                setWidths();
-                topScroll.addEventListener('scroll', handleTopScroll);
-                tableContainer.addEventListener('scroll', handleTableScroll);
-                window.addEventListener('resize', setWidths);
+        <div id="errorState" class="error-state" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <p id="errorMessage"></p>
+        </div>
 
-                return () => {
-                    topScroll.removeEventListener('scroll', handleTopScroll);
-                    tableContainer.removeEventListener('scroll', handleTableScroll);
-                    window.removeEventListener('resize', setWidths);
-                };
-            }, [loading]);
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">📊</div>
+            <h3>Geen data geladen</h3>
+            <p>Importeer een Excel bestand om aan de slag te gaan</p>
+        </div>
 
-            const handleSheetChange = (sheetIndex) => {
-                setCurrentSheet(sheetIndex);
-                setLoading(true);
-            };
+        <div id="tableContainer" class="table-container" style="display: none;">
+            <table id="dataTable" class="modern-table">
+                <thead id="tableHeader"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
 
-            const exportToExcel = () => {
+        <div id="pagination" class="pagination" style="display: none;">
+            <button id="prevBtn" class="pagination-btn">← Vorige</button>
+            <div id="paginationInfo" class="pagination-info"></div>
+            <button id="nextBtn" class="pagination-btn">Volgende →</button>
+        </div>
+    </div>
+
+    <script>
+        // Same JavaScript implementation as other versions
+        let currentData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 50;
+        let sortConfig = { key: null, direction: 'asc' };
+
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+        document.getElementById('prevBtn').addEventListener('click', () => changePage(-1));
+        document.getElementById('nextBtn').addEventListener('click', () => changePage(1));
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                showError('Selecteer een geldig Excel bestand (.xlsx of .xls)');
+                return;
+            }
+
+            showLoading(true);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
                 try {
-                    const ws = XLSX.utils.aoa_to_sheet(tableData);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Verkeersborden");
-                    XLSX.writeFile(wb, "Verkeersborden_Export.xlsx");
-                    showSuccess('Excel bestand wordt gedownload...');
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1,
+                        defval: '',
+                        blankrows: false
+                    });
+
+                    if (jsonData.length === 0) {
+                        showError('Het Excel bestand is leeg');
+                        return;
+                    }
+
+                    const headers = jsonData[0];
+                    const rows = jsonData.slice(1).map(row => {
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            obj[header || `Col${index + 1}`] = row[index] || '';
+                        });
+                        return obj;
+                    });
+
+                    currentData = rows;
+                    filteredData = [...currentData];
+                    
+                    document.getElementById('fileName').textContent = `📄 ${file.name}`;
+                    document.getElementById('dataCount').textContent = `${currentData.length} records geladen`;
+                    
+                    showLoading(false);
+                    showData();
+                    updatePagination();
+                    
                 } catch (error) {
-                    showError('Fout bij exporteren: ' + error.message);
+                    showError(`Kon het bestand niet laden: ${error.message}`);
+                    showLoading(false);
                 }
             };
+            
+            reader.readAsArrayBuffer(file);
+        }
 
-            const autoFormat = () => {
-                showSuccess('Auto-formattering toegepast! (Demo functie)');
-            };
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredData = [...currentData];
+            } else {
+                filteredData = currentData.filter(row => 
+                    Object.values(row).some(value => 
+                        value.toString().toLowerCase().includes(searchTerm)
+                    )
+                );
+            }
+            
+            currentPage = 1;
+            updateTable();
+            updatePagination();
+        }
 
-            const recalculate = () => {
-                showSuccess('Herberekening voltooid! (Demo functie)');
-            };
+        function handleSort(key) {
+            let direction = 'asc';
+            if (sortConfig.key === key && sortConfig.direction === 'asc') {
+                direction = 'desc';
+            }
+            sortConfig = { key, direction };
 
-            const changeZoom = (newZoom) => {
-                setZoom(newZoom);
-            };
+            filteredData.sort((a, b) => {
+                if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+                if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
 
-            const changeTheme = (newTheme) => {
-                setTheme(newTheme);
-            };
+            updateTable();
+        }
 
-            const showError = (message) => {
-                console.error(message);
-                alert(message);
-            };
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            currentPage = Math.max(1, Math.min(currentPage + direction, totalPages));
+            updateTable();
+            updatePagination();
+        }
 
-            const showSuccess = (message) => {
-                console.log(message);
-                // Create temporary success message
-                const successDiv = document.createElement('div');
-                successDiv.textContent = message;
-                successDiv.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #28a745;
-                    color: white;
-                    padding: 15px 20px;
-                    border-radius: 5px;
-                    z-index: 10000;
-                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                `;
-                document.body.appendChild(successDiv);
+        function updateTable() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = filteredData.slice(start, end);
+            
+            const thead = document.getElementById('tableHeader');
+            const tbody = document.getElementById('tableBody');
+            
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            if (pageData.length === 0) return;
+            
+            const headerRow = document.createElement('tr');
+            const headers = Object.keys(pageData[0]);
+            
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                th.className = 'sortable';
+                th.onclick = () => handleSort(header);
                 
-                setTimeout(() => {
-                    if (document.body.contains(successDiv)) {
-                        document.body.removeChild(successDiv);
+                const indicator = document.createElement('span');
+                indicator.className = 'sort-indicator';
+                indicator.textContent = sortConfig.key === header 
+                    ? (sortConfig.direction === 'asc' ? '↑' : '↓') 
+                    : '↕️';
+                th.appendChild(indicator);
+                
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    const value = row[header];
+                    
+                    if (value && value.toString().startsWith('http')) {
+                        const link = document.createElement('a');
+                        link.href = value;
+                        link.textContent = 'Link';
+                        link.className = 'table-link';
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        td.appendChild(link);
+                    } else {
+                        td.textContent = value || '-';
                     }
-                }, 3000);
-            };
+                    
+                    tr.appendChild(td);
+                });
+                
+                tbody.appendChild(tr);
+            });
+            
+            document.getElementById('resultsInfo').textContent = 
+                `${filteredData.length} van ${currentData.length} records`;
+        }
 
-            return (
-                <div className="page-wrapper">
-                    <div className="container">
-                        <header className="header">
-                            <h1 className="title">Werklijst Verkeersborden - Enterprise Edition</h1>
-                            <p className="description">
-                                Enterprise-grade Excel viewer met geavanceerde functies. (Gebruikt SheetJS als fallback)
-                            </p>
-                            <div className="controls">
-                                <a
-                                    href="https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1"
-                                    className="download-icon"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title="Bewerk het Excel-bestand"
-                                ></a>
-                                <button onClick={() => window.location.reload()} className="load-btn">Herlaad Data</button>
-                                <button onClick={exportToExcel} className="export-btn">Export Excel</button>
-                                <button onClick={autoFormat} className="format-btn">Auto Format</button>
-                                <button onClick={recalculate} className="calc-btn">Herbereken</button>
-                            </div>
-                        </header>
-                        
-                        <div className="toolbar">
-                            <div className="toolbar-section">
-                                <label>Zoom:</label>
-                                <select value={zoom} onChange={(e) => changeZoom(parseFloat(e.target.value))}>
-                                    <option value="0.5">50%</option>
-                                    <option value="0.75">75%</option>
-                                    <option value="1">100%</option>
-                                    <option value="1.25">125%</option>
-                                    <option value="1.5">150%</option>
-                                    <option value="2">200%</option>
-                                </select>
-                            </div>
-                            <div className="toolbar-section">
-                                <label>Thema:</label>
-                                <select value={theme} onChange={(e) => changeTheme(e.target.value)}>
-                                    <option value="default">Default</option>
-                                    <option value="dark">Dark</option>
-                                    <option value="blue">Blue</option>
-                                    <option value="green">Green</option>
-                                </select>
-                            </div>
-                            <div className="toolbar-section">
-                                <span>Cel: A1</span>
-                                <span>Sheet: {sheetNames[currentSheet] || 'Sheet1'}</span>
-                            </div>
-                        </div>
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            document.getElementById('paginationInfo').textContent = 
+                `Pagina ${currentPage} van ${totalPages}`;
+                
+            document.getElementById('pagination').style.display = totalPages > 1 ? 'flex' : 'none';
+        }
 
-                        {sheetNames.length > 1 && (
-                            <div className="sheet-tabs">
-                                {sheetNames.map((name, index) => (
-                                    <button
-                                        key={index}
-                                        className={`sheet-tab ${index === currentSheet ? 'active' : ''}`}
-                                        onClick={() => handleSheetChange(index)}
-                                    >
-                                        {name}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        
-                        {loading && <div className="loading-indicator">Spreadsheet wordt geladen...</div>}
-                        {error && <div className="error-message">{error}</div>}
+        function showData() {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('fileInfo').style.display = 'flex';
+            document.getElementById('controlsBar').style.display = 'flex';
+            document.getElementById('tableContainer').style.display = 'block';
+            updateTable();
+        }
 
-                        {!loading && !error && (
-                            <React.Fragment>
-                                <div className="stats">
-                                    Rijen: {tableData.length} | Kolommen: {tableData[0] ? tableData[0].length : 0}
-                                </div>
-                                <div className="top-scrollbar" ref={topScrollRef}>
-                                    <div></div>
-                                </div>
-                                <section 
-                                    className="table-container" 
-                                    ref={tableContainerRef}
-                                    style={{ 
-                                        transform: `scale(${zoom})`,
-                                        transformOrigin: 'top left',
-                                        width: `${100/zoom}%`,
-                                        height: `${100/zoom}%`
-                                    }}
-                                >
-                                    <table className={`data-table theme-${theme}`}>
-                                        <thead>
-                                            <tr>
-                                                {tableData[0] &&
-                                                    tableData[0].map((header, index) => (
-                                                        <th key={index} className="table-header">
-                                                            {header || `Kolom ${index + 1}`}
-                                                        </th>
-                                                    ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {tableData.slice(1).map((row, rowIndex) => (
-                                                <tr key={rowIndex} className="table-row">
-                                                    {row.map((cell, cellIndex) => (
-                                                        <td key={cellIndex} className="table-cell">
-                                                            {typeof cell === "string" && cell.startsWith("http") ? (
-                                                                <a
-                                                                    href={cell}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="table-link"
-                                                                >
-                                                                    Bekijk link
-                                                                </a>
-                                                            ) : (
-                                                                cell
-                                                            )}
-                                                        </td>
-                                                    ))}
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </section>
-                            </React.Fragment>
-                        )}
-                    </div>
-                </div>
-            );
-        };
+        function showLoading(show) {
+            document.getElementById('loadingState').style.display = show ? 'flex' : 'none';
+        }
 
-        ReactDOM.render(<VerkeersbordenWerklijst />, document.getElementById("root"));
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorState').style.display = 'flex';
+            document.getElementById('emptyState').style.display = 'none';
+            
+            setTimeout(() => {
+                document.getElementById('errorState').style.display = 'none';
+                if (currentData.length === 0) {
+                    document.getElementById('emptyState').style.display = 'flex';
+                }
+            }, 5000);
+        }
+
+        function clearData() {
+            currentData = [];
+            filteredData = [];
+            currentPage = 1;
+            
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('controlsBar').style.display = 'none';
+            document.getElementById('tableContainer').style.display = 'none';
+            document.getElementById('pagination').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'flex';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('fileInput').value = '';
+        }
     </script>
 </body>
 </html>

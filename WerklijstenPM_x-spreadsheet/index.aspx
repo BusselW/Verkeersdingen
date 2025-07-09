@@ -4,304 +4,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Upload en bekijk Excel bestanden met x-spreadsheet - moderne lichtgewicht spreadsheet viewer">
-    <title>Verkeersdingen Werklijst - x-spreadsheet Viewer</title>
+    <title>Verkeersdingen Werklijst Dashboard - x-spreadsheet</title>
     <link href="styles.css" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
-    
-    <!-- x-spreadsheet CSS and JS -->
-    <link rel="stylesheet" href="https://unpkg.com/x-data-spreadsheet@1.1.9/dist/xspreadsheet.css">
-    <script src="https://unpkg.com/x-data-spreadsheet@1.1.9/dist/xspreadsheet.js"></script>
-    
-    <!-- External Dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
-    <div class="page-wrapper">
-        <div class="container">
-            <header class="header">
-                <h1 class="title">Verkeersdingen Werklijst</h1>
-                <p class="description">
-                    Interactieve Excel viewer met x-spreadsheet voor moderne verkeersborden werklijst beheer
-                </p>
-                <div class="controls">
-                    <button id="loadBtn" class="export-btn">Herlaad Data</button>
-                    <button id="exportBtn" class="export-btn">Export JSON</button>
-                    <button id="clearBtn" class="export-btn">Leeg Sheet</button>
-                </div>
-            </header>
-            
-            <div class="stats">
-                <span id="cellInfo">Cel: A1</span>
-                <span id="dataInfo">Rijen: 0, Kolommen: 0</span>
-                <span id="sheetInfo">Sheet: Sheet1</span>
+    <div class="dashboard">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1 class="dashboard-title">Verkeersdingen Werklijst</h1>
+                <p class="dashboard-subtitle">x-spreadsheet Implementation - Lichtgewicht spreadsheet oplossing</p>
             </div>
             
-            <div id="loading" class="loading-indicator">Spreadsheet wordt geladen...</div>
-            <div id="error" class="error-message" style="display: none;"></div>
-            
-            <div id="spreadsheet" style="height: 500px; width: 100%;"></div>
+            <div class="header-actions">
+                <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <span class="btn-icon">📂</span>
+                    Excel Importeren
+                </button>
+            </div>
+        </header>
+
+        <div id="fileInfo" class="file-info-bar" style="display: none;">
+            <span id="fileName" class="file-name"></span>
+            <span id="dataCount" class="data-count"></span>
+            <button class="clear-btn" onclick="clearData()">Wissen</button>
+        </div>
+
+        <div id="controlsBar" class="controls-bar" style="display: none;">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Zoeken in alle kolommen..." class="search-input">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div id="resultsInfo" class="results-info"></div>
+        </div>
+
+        <div id="loadingState" class="loading-state" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Bestand wordt verwerkt...</p>
+        </div>
+
+        <div id="errorState" class="error-state" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <p id="errorMessage"></p>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">📊</div>
+            <h3>Geen data geladen</h3>
+            <p>Importeer een Excel bestand om aan de slag te gaan</p>
+        </div>
+
+        <div id="tableContainer" class="table-container" style="display: none;">
+            <table id="dataTable" class="modern-table">
+                <thead id="tableHeader"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="pagination" class="pagination" style="display: none;">
+            <button id="prevBtn" class="pagination-btn">← Vorige</button>
+            <div id="paginationInfo" class="pagination-info"></div>
+            <button id="nextBtn" class="pagination-btn">Volgende →</button>
         </div>
     </div>
+
     <script>
-        let xs;
-        let originalData = [];
+        // Same JavaScript implementation as other versions
+        let currentData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 50;
+        let sortConfig = { key: null, direction: 'asc' };
 
-        function initializeSpreadsheet() {
-            const options = {
-                mode: 'edit',
-                showToolbar: true,
-                showGrid: true,
-                showContextmenu: true,
-                view: {
-                    height: () => document.getElementById('spreadsheet').clientHeight,
-                    width: () => document.getElementById('spreadsheet').clientWidth,
-                },
-                row: {
-                    len: 100,
-                    height: 25,
-                },
-                col: {
-                    len: 26,
-                    width: 100,
-                    indexWidth: 60,
-                    minWidth: 60,
-                },
-                style: {
-                    bgcolor: '#ffffff',
-                    align: 'left',
-                    valign: 'middle',
-                    textwrap: false,
-                    strike: false,
-                    underline: false,
-                    color: '#0a0a0a',
-                    font: {
-                        name: 'Helvetica',
-                        size: 10,
-                        bold: false,
-                        italic: false,
-                    },
-                },
-            };
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+        document.getElementById('prevBtn').addEventListener('click', () => changePage(-1));
+        document.getElementById('nextBtn').addEventListener('click', () => changePage(1));
 
-            xs = x_spreadsheet('#spreadsheet', options);
-            
-            // Add event listeners
-            xs.on('cell-selected', (cell, ri, ci) => {
-                updateCellInfo(ri, ci);
-            });
-            
-            xs.on('cell-edited', (text, ri, ci) => {
-                console.log('Cell edited:', text, ri, ci);
-                updateDataInfo();
-            });
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            document.getElementById('loading').style.display = 'none';
-            loadExcelData();
-        }
-
-        function updateCellInfo(ri, ci) {
-            const cellName = columnName(ci) + (ri + 1);
-            document.getElementById('cellInfo').textContent = `Cel: ${cellName}`;
-        }
-
-        function updateDataInfo() {
-            try {
-                const data = xs.getData();
-                const sheets = Object.keys(data);
-                const currentSheet = sheets[0] || 'Sheet1';
-                const sheetData = data[currentSheet];
-                
-                let maxRow = 0;
-                let maxCol = 0;
-                
-                if (sheetData && sheetData.rows) {
-                    Object.keys(sheetData.rows).forEach(key => {
-                        const rowIndex = parseInt(key);
-                        if (rowIndex > maxRow) maxRow = rowIndex;
-                        
-                        const row = sheetData.rows[key];
-                        if (row && row.cells) {
-                            Object.keys(row.cells).forEach(cellKey => {
-                                const colIndex = parseInt(cellKey);
-                                if (colIndex > maxCol) maxCol = colIndex;
-                            });
-                        }
-                    });
-                }
-                
-                document.getElementById('dataInfo').textContent = `Rijen: ${maxRow + 1}, Kolommen: ${maxCol + 1}`;
-                document.getElementById('sheetInfo').textContent = `Sheet: ${currentSheet}`;
-            } catch (error) {
-                console.error('Error updating data info:', error);
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                showError('Selecteer een geldig Excel bestand (.xlsx of .xls)');
+                return;
             }
-        }
 
-        function columnName(index) {
-            let result = '';
-            while (index >= 0) {
-                result = String.fromCharCode(65 + (index % 26)) + result;
-                index = Math.floor(index / 26) - 1;
-            }
-            return result;
-        }
-
-        async function loadExcelData() {
-            try {
-                const response = await fetch("https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1");
-                if (!response.ok) {
-                    throw new Error(`Het ophalen van het bestand is mislukt met status: ${response.status}`);
-                }
-                
-                const arrayBuffer = await response.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, { type: "array" });
-                
-                // Convert XLSX data to x-spreadsheet format
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-                
-                if (jsonData.length === 0) {
-                    throw new Error("Het Excel-bestand is leeg of kon niet correct worden gelezen.");
-                }
-
-                // Convert to x-spreadsheet format
-                const xsData = convertToXSpreadsheetFormat(jsonData);
-                originalData = jsonData;
-                
-                // Load data into spreadsheet
-                xs.loadData(xsData);
-                updateDataInfo();
-                showSuccess('Excel bestand succesvol geladen!');
-                
-            } catch (error) {
-                console.error('Error loading Excel data:', error);
-                showError('Kon de gegevens niet laden: ' + error.message);
-            }
-        }
-
-        function convertToXSpreadsheetFormat(jsonData) {
-            const rows = {};
+            showLoading(true);
             
-            jsonData.forEach((row, rowIndex) => {
-                if (row && row.length > 0) {
-                    const cells = {};
-                    row.forEach((cell, colIndex) => {
-                        if (cell !== null && cell !== undefined && cell !== '') {
-                            cells[colIndex] = {
-                                text: String(cell),
-                                style: 0
-                            };
-                        }
-                    });
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
                     
-                    if (Object.keys(cells).length > 0) {
-                        rows[rowIndex] = { cells };
-                    }
-                }
-            });
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1,
+                        defval: '',
+                        blankrows: false
+                    });
 
-            return {
-                'Sheet1': {
-                    name: 'Verkeersborden',
-                    freeze: 'A1',
-                    styles: [
-                        {
-                            align: 'center',
-                            valign: 'middle',
-                            font: { bold: true },
-                            bgcolor: '#f0f0f0'
-                        }
-                    ],
-                    merges: [],
-                    rows: rows,
-                    cols: {}
+                    if (jsonData.length === 0) {
+                        showError('Het Excel bestand is leeg');
+                        return;
+                    }
+
+                    const headers = jsonData[0];
+                    const rows = jsonData.slice(1).map(row => {
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            obj[header || `Col${index + 1}`] = row[index] || '';
+                        });
+                        return obj;
+                    });
+
+                    currentData = rows;
+                    filteredData = [...currentData];
+                    
+                    document.getElementById('fileName').textContent = `📄 ${file.name}`;
+                    document.getElementById('dataCount').textContent = `${currentData.length} records geladen`;
+                    
+                    showLoading(false);
+                    showData();
+                    updatePagination();
+                    
+                } catch (error) {
+                    showError(`Kon het bestand niet laden: ${error.message}`);
+                    showLoading(false);
                 }
             };
+            
+            reader.readAsArrayBuffer(file);
         }
 
-        function exportData() {
-            try {
-                const data = xs.getData();
-                const jsonString = JSON.stringify(data, null, 2);
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'verkeersborden_data.json';
-                a.click();
-                window.URL.revokeObjectURL(url);
-                showSuccess('Data geëxporteerd als JSON!');
-            } catch (error) {
-                showError('Fout bij exporteren: ' + error.message);
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredData = [...currentData];
+            } else {
+                filteredData = currentData.filter(row => 
+                    Object.values(row).some(value => 
+                        value.toString().toLowerCase().includes(searchTerm)
+                    )
+                );
             }
+            
+            currentPage = 1;
+            updateTable();
+            updatePagination();
         }
 
-        function clearSheet() {
-            if (confirm('Weet je zeker dat je de spreadsheet wilt legen?')) {
-                xs.loadData({
-                    'Sheet1': {
-                        name: 'Sheet1',
-                        rows: {},
-                        cols: {}
+        function handleSort(key) {
+            let direction = 'asc';
+            if (sortConfig.key === key && sortConfig.direction === 'asc') {
+                direction = 'desc';
+            }
+            sortConfig = { key, direction };
+
+            filteredData.sort((a, b) => {
+                if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+                if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            updateTable();
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            currentPage = Math.max(1, Math.min(currentPage + direction, totalPages));
+            updateTable();
+            updatePagination();
+        }
+
+        function updateTable() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageData = filteredData.slice(start, end);
+            
+            const thead = document.getElementById('tableHeader');
+            const tbody = document.getElementById('tableBody');
+            
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            if (pageData.length === 0) return;
+            
+            const headerRow = document.createElement('tr');
+            const headers = Object.keys(pageData[0]);
+            
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                th.className = 'sortable';
+                th.onclick = () => handleSort(header);
+                
+                const indicator = document.createElement('span');
+                indicator.className = 'sort-indicator';
+                indicator.textContent = sortConfig.key === header 
+                    ? (sortConfig.direction === 'asc' ? '↑' : '↓') 
+                    : '↕️';
+                th.appendChild(indicator);
+                
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            
+            pageData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    const value = row[header];
+                    
+                    if (value && value.toString().startsWith('http')) {
+                        const link = document.createElement('a');
+                        link.href = value;
+                        link.textContent = 'Link';
+                        link.className = 'table-link';
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        td.appendChild(link);
+                    } else {
+                        td.textContent = value || '-';
                     }
+                    
+                    tr.appendChild(td);
                 });
-                updateDataInfo();
-                showSuccess('Spreadsheet geleegd!');
-            }
+                
+                tbody.appendChild(tr);
+            });
+            
+            document.getElementById('resultsInfo').textContent = 
+                `${filteredData.length} van ${currentData.length} records`;
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            document.getElementById('paginationInfo').textContent = 
+                `Pagina ${currentPage} van ${totalPages}`;
+                
+            document.getElementById('pagination').style.display = totalPages > 1 ? 'flex' : 'none';
+        }
+
+        function showData() {
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('fileInfo').style.display = 'flex';
+            document.getElementById('controlsBar').style.display = 'flex';
+            document.getElementById('tableContainer').style.display = 'block';
+            updateTable();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingState').style.display = show ? 'flex' : 'none';
         }
 
         function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorState').style.display = 'flex';
+            document.getElementById('emptyState').style.display = 'none';
+            
             setTimeout(() => {
-                errorDiv.style.display = 'none';
+                document.getElementById('errorState').style.display = 'none';
+                if (currentData.length === 0) {
+                    document.getElementById('emptyState').style.display = 'flex';
+                }
             }, 5000);
         }
 
-        function showSuccess(message) {
-            const successDiv = document.createElement('div');
-            successDiv.className = 'success-message';
-            successDiv.textContent = message;
-            successDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #28a745;
-                color: white;
-                padding: 15px 20px;
-                border-radius: 5px;
-                z-index: 10000;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                animation: slideInRight 0.3s ease-out;
-            `;
-            document.body.appendChild(successDiv);
+        function clearData() {
+            currentData = [];
+            filteredData = [];
+            currentPage = 1;
             
-            setTimeout(() => {
-                if (document.body.contains(successDiv)) {
-                    document.body.removeChild(successDiv);
-                }
-            }, 3000);
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('controlsBar').style.display = 'none';
+            document.getElementById('tableContainer').style.display = 'none';
+            document.getElementById('pagination').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'flex';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('fileInput').value = '';
         }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeSpreadsheet();
-            
-            document.getElementById('loadBtn').addEventListener('click', loadExcelData);
-            document.getElementById('exportBtn').addEventListener('click', exportData);
-            document.getElementById('clearBtn').addEventListener('click', clearSheet);
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (xs) {
-                xs.resize();
-            }
-        });
     </script>
 </body>
 </html>
