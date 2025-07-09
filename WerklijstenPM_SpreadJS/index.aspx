@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Upload en bekijk Excel bestanden met SpreadJS fallback - moderne spreadsheet viewer">
-    <title>Excel Bestand Viewer - SpreadJS</title>
+    <title>Verkeersdingen Werklijst - SpreadJS Viewer</title>
     <link href="styles.css" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     
@@ -15,11 +15,12 @@
 
 <body>
     <div id="root"></div>
-    <script src="scripts.js"></script>
-</body>
-</html>
-
-
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
         const VerkeersbordenWerklijst = () => {
             const [tableData, setTableData] = useState([]);
             const [loading, setLoading] = useState(true);

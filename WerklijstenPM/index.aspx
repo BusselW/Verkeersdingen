@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verkeersborden Werklijst</title>
+    <title>Verkeersdingen Werklijst - Excel Viewer</title>
     <link href="styles_new.css" rel="stylesheet">
     <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
@@ -138,10 +138,10 @@
                 const file = event.target.files[0];
                 if (file) {
                     if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
-                        file.name.endsWith('.xlsx')) {
+                        file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
                         processExcelFile(file);
                     } else {
-                        setError('Selecteer een geldig .xlsx bestand');
+                        setError('Selecteer een geldig Excel bestand (.xlsx of .xls)');
                     }
                 }
             };
@@ -151,10 +151,10 @@
                 const file = event.dataTransfer.files[0];
                 if (file) {
                     if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
-                        file.name.endsWith('.xlsx')) {
+                        file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
                         processExcelFile(file);
                     } else {
-                        setError('Selecteer een geldig .xlsx bestand');
+                        setError('Selecteer een geldig Excel bestand (.xlsx of .xls)');
                     }
                 }
             };
@@ -209,9 +209,9 @@
                 <div className="page-wrapper">
                     <div className="container">
                         <header className="header">
-                            <h1 className="title">Excel Bestand Viewer</h1>
+                            <h1 className="title">Verkeersdingen Werklijst</h1>
                             <p className="description">
-                                Upload een .xlsx bestand om de inhoud in een tabel te bekijken. Sleep het bestand naar het upload gebied of klik om een bestand te selecteren.
+                                Upload uw Excel werklijst om verkeersborden gegevens te bekijken in een moderne, professionele interface. Sleep het bestand naar het upload gebied of klik om een bestand te selecteren.
                             </p>
                         </header>
                         
@@ -223,15 +223,15 @@
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <div className="upload-content">
-                                    <div className="upload-icon">📄</div>
-                                    <h3>Sleep een .xlsx bestand hier naartoe</h3>
-                                    <p>of klik om een bestand te selecteren</p>
-                                    <button className="upload-button">Bestand Selecteren</button>
+                                    <div className="upload-icon">📊</div>
+                                    <h3>Sleep een .xlsx werklijst hier naartoe</h3>
+                                    <p>of klik om een verkeersborden Excel bestand te selecteren</p>
+                                    <button className="upload-button">Werklijst Selecteren</button>
                                 </div>
                                 <input
                                     ref={fileInputRef}
                                     type="file"
-                                    accept=".xlsx"
+                                    accept=".xlsx,.xls"
                                     onChange={handleFileUpload}
                                     style={{ display: 'none' }}
                                 />

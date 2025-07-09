@@ -8,7 +8,7 @@ html, body, #root {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
     color: #333;
     line-height: 1.6;
 }
@@ -43,7 +43,7 @@ body {
 .title {
     font-size: 3.2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -70,7 +70,7 @@ body {
 }
 
 .upload-area:hover {
-    border-color: #667eea;
+    border-color: #ff6b35;
     background: #f3f4f6;
     transform: translateY(-2px);
 }
@@ -98,7 +98,7 @@ body {
 }
 
 .upload-button {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
     color: white;
     border: none;
     padding: 12px 30px;
@@ -111,7 +111,7 @@ body {
 
 .upload-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
 }
 
 /* File Info Section */
@@ -153,7 +153,7 @@ body {
     text-align: center;
     padding: 40px;
     font-size: 1.2rem;
-    color: #667eea;
+    color: #ff6b35;
     font-weight: 500;
 }
 
@@ -217,13 +217,13 @@ body {
 }
 
 .table-container::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
     border-radius: 6px;
     border: 2px solid #f3f4f6;
 }
 
 .table-container::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #5a6fd8 0%, #6b4190 100%);
+    background: linear-gradient(135deg, #e55a2b 0%, #e0821a 100%);
 }
 
 /* Data Table */
@@ -236,7 +236,7 @@ body {
 }
 
 .table-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
     color: white;
     padding: 16px 12px;
     font-weight: 600;
@@ -271,7 +271,7 @@ body {
 }
 
 .table-link {
-    color: #667eea;
+    color: #ff6b35;
     text-decoration: none;
     font-weight: 500;
     padding: 6px 12px;
