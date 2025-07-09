@@ -78,10 +78,18 @@
         const itemsPerPage = 50;
         let sortConfig = { key: null, direction: 'asc' };
 
+        // SharePoint Excel file URL
+        const EXCEL_URL = "https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1";
+
         document.getElementById('fileInput').addEventListener('change', handleFileUpload);
         document.getElementById('searchInput').addEventListener('input', handleSearch);
         document.getElementById('prevBtn').addEventListener('click', () => changePage(-1));
         document.getElementById('nextBtn').addEventListener('click', () => changePage(1));
+
+        // Auto-load Excel file from SharePoint on page load
+        window.addEventListener('load', function() {
+            loadExcelFromURL();
+        });
 
         function handleFileUpload(event) {
             const file = event.target.files[0];
@@ -279,6 +287,58 @@
                     document.getElementById('emptyState').style.display = 'flex';
                 }
             }, 5000);
+        }
+
+        function loadExcelFromURL() {
+            showLoading(true);
+            
+            fetch(EXCEL_URL)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Het ophalen van het bestand is mislukt met status: ${response.status}`);
+                    }
+                    return response.arrayBuffer();
+                })
+                .then(arrayBuffer => {
+                    const data = new Uint8Array(arrayBuffer);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1,
+                        defval: '',
+                        blankrows: false
+                    });
+
+                    if (jsonData.length === 0) {
+                        showError('Het Excel bestand is leeg');
+                        return;
+                    }
+
+                    const headers = jsonData[0];
+                    const rows = jsonData.slice(1).map(row => {
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            obj[header || `Col${index + 1}`] = row[index] || '';
+                        });
+                        return obj;
+                    });
+
+                    currentData = rows;
+                    filteredData = [...currentData];
+                    
+                    document.getElementById('fileName').textContent = `📄 Werklijsten MAPS PM Verkeersborden.xlsx`;
+                    document.getElementById('dataCount').textContent = `${currentData.length} records geladen`;
+                    
+                    showLoading(false);
+                    showData();
+                    updatePagination();
+                })
+                .catch(error => {
+                    showError(`Kon het bestand niet laden: ${error.message}`);
+                    showLoading(false);
+                });
         }
 
         function clearData() {

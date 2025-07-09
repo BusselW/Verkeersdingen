@@ -28,6 +28,9 @@
             const [itemsPerPage] = useState(50);
             const fileInputRef = useRef(null);
 
+            // SharePoint Excel file URL
+            const EXCEL_URL = "https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1";
+
             const processExcelFile = async (file) => {
                 setLoading(true);
                 setError(null);
@@ -35,6 +38,68 @@
 
                 try {
                     const arrayBuffer = await file.arrayBuffer();
+                    const workbook = new ExcelJS.Workbook();
+                    await workbook.xlsx.load(arrayBuffer);
+                    const firstSheet = workbook.worksheets[0];
+                    
+                    const jsonData = [];
+                    let headers = [];
+                    
+                    firstSheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+                        const rowData = [];
+                        row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
+                            let cellValue = cell.value || '';
+                            
+                            if (cell.value && typeof cell.value === 'object') {
+                                if (cell.value.richText) {
+                                    cellValue = cell.value.richText.map(rt => rt.text).join('');
+                                } else if (cell.value.formula) {
+                                    cellValue = cell.value.result || cell.value.formula;
+                                } else if (cell.value.hyperlink) {
+                                    cellValue = cell.value.text || cell.value.hyperlink;
+                                } else if (cell.value instanceof Date) {
+                                    cellValue = cell.value.toLocaleDateString('nl-NL');
+                                } else {
+                                    cellValue = cell.value.toString();
+                                }
+                            } else if (cell.value instanceof Date) {
+                                cellValue = cell.value.toLocaleDateString('nl-NL');
+                            }
+                            
+                            rowData[colNumber - 1] = cellValue;
+                        });
+                        
+                        if (rowNumber === 1) {
+                            headers = rowData;
+                        } else {
+                            const rowObject = {};
+                            headers.forEach((header, index) => {
+                                rowObject[header || `Col${index + 1}`] = rowData[index] || '';
+                            });
+                            jsonData.push(rowObject);
+                        }
+                    });
+                    
+                    setData(jsonData);
+                } catch (e) {
+                    setError(`Kon het bestand niet laden: ${e.message}`);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const loadExcelFromURL = async () => {
+                setLoading(true);
+                setError(null);
+                setFileName('Werklijsten MAPS PM Verkeersborden.xlsx');
+
+                try {
+                    const response = await fetch(EXCEL_URL);
+                    if (!response.ok) {
+                        throw new Error(`Het ophalen van het bestand is mislukt met status: ${response.status}`);
+                    }
+                    
+                    const arrayBuffer = await response.arrayBuffer();
                     const workbook = new ExcelJS.Workbook();
                     await workbook.xlsx.load(arrayBuffer);
                     const firstSheet = workbook.worksheets[0];
@@ -136,6 +201,11 @@
 
             const headers = data.length > 0 ? Object.keys(data[0]) : [];
 
+            // Auto-load Excel file from SharePoint on component mount
+            useEffect(() => {
+                loadExcelFromURL();
+            }, []);
+
             return (
                 <div className="dashboard">
                     <header className="dashboard-header">
@@ -154,10 +224,19 @@
                             />
                             <button 
                                 className="upload-btn"
+                                onClick={() => loadExcelFromURL()}
+                                disabled={loading}
+                            >
+                                <span className="btn-icon">🔄</span>
+                                {loading ? 'Laden...' : 'Herlaad Data'}
+                            </button>
+                            <button 
+                                className="upload-btn"
                                 onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                                style={{ marginLeft: '10px' }}
                             >
                                 <span className="btn-icon">📂</span>
-                                Excel Importeren
+                                Ander Bestand
                             </button>
                         </div>
                     </header>
