@@ -233,19 +233,22 @@ html, body {
 /* Table Container */
 .table-container {
     flex: 1;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: visible;
     margin: 0 3rem;
     margin-bottom: 2rem;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.1);
+    max-width: 100%;
 }
 
 .modern-table {
     width: 100%;
     border-collapse: collapse;
     background: transparent;
-    min-width: 800px;
+    min-width: 1400px;
+    white-space: nowrap;
 }
 
 .modern-table thead {
@@ -307,8 +310,10 @@ html, body {
     color: rgba(33, 37, 41, 0.9);
     border-right: 1px solid rgba(0, 0, 0, 0.05);
     vertical-align: top;
-    word-wrap: break-word;
-    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
 }
 
 .modern-table td:last-child {

@@ -25,8 +25,6 @@
             const [fileName, setFileName] = useState(null);
             const [searchTerm, setSearchTerm] = useState('');
             const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-            const [currentPage, setCurrentPage] = useState(1);
-            const [itemsPerPage] = useState(50);
             const fileInputRef = useRef(null);
 
             // Pastel colors for groups
@@ -42,12 +40,12 @@
             const EXCEL_URL = "https://som.org.om.local/sites/MulderT/Onderdelen/Beoordelen/Verkeersborden/DocumentenVerkeersborden/Werklijsten%20PM/Werklijsten%20MAPS%20PM%20Verkeersborden.xlsx?web=1";
 
             const processExcelDataWithGroups = (worksheet) => {
-                // Extract main data from A1:O8
+                // Extract main data from A1:W6
                 const mainData = [];
                 const headers = [];
                 
-                // Get headers from row 1 (A1:O1)
-                for (let col = 1; col <= 15; col++) { // A=1 to O=15
+                // Get headers from row 1 (A1:W1)
+                for (let col = 1; col <= 23; col++) { // A=1 to W=23
                     const cell = worksheet.getCell(1, col);
                     let cellValue = cell.value || '';
                     
@@ -70,10 +68,10 @@
                     headers.push(cellValue || `Col${col}`);
                 }
                 
-                // Get data rows from A2:O8
-                for (let row = 2; row <= 8; row++) {
+                // Get data rows from A2:W6
+                for (let row = 2; row <= 6; row++) {
                     const rowData = {};
-                    for (let col = 1; col <= 15; col++) {
+                    for (let col = 1; col <= 23; col++) {
                         const cell = worksheet.getCell(row, col);
                         let cellValue = cell.value || '';
                         
@@ -96,17 +94,12 @@
                         rowData[headers[col - 1]] = cellValue;
                     }
                     
-                    // Add group letter and color based on column A value
-                    const groupLetter = rowData[headers[0]] ? rowData[headers[0]].toString().trim() : '';
-                    rowData._groupLetter = groupLetter;
-                    rowData._groupColor = groupColors[groupLetter] || '#FFFFFF';
-                    
                     mainData.push(rowData);
                 }
                 
-                // Extract group definitions from A11:C14/C15
+                // Extract group definitions from A9:C13
                 const groupDefinitions = [];
-                for (let row = 11; row <= 15; row++) {
+                for (let row = 9; row <= 13; row++) {
                     const groepjeCell = worksheet.getCell(row, 1); // Column A
                     const membersCell = worksheet.getCell(row, 2); // Column B
                     const contactCell = worksheet.getCell(row, 3); // Column C
@@ -136,10 +129,10 @@
                         if (index === 2) contact = cell;
                     });
                     
-                    // Extract group letter from groepje (e.g., "Groepje A" -> "A")
-                    const groupLetter = groepje.toString().match(/([A-E])$/)?.[1] || '';
+                    // Trim to get last character (e.g., "Groepje A" -> "A")
+                    const groupLetter = groepje.toString().trim().slice(-1);
                     
-                    if (groupLetter && groepje.toString().toLowerCase().includes('groepje')) {
+                    if (groupLetter && groepje.toString().trim()) {
                         groupDefinitions.push({
                             letter: groupLetter,
                             name: groepje.toString(),
@@ -149,6 +142,15 @@
                         });
                     }
                 }
+                
+                // Now match group letters against A4:A6 values and assign colors
+                mainData.forEach(row => {
+                    const columnAValue = row[headers[0]] ? row[headers[0]].toString().trim() : '';
+                    const matchingGroup = groupDefinitions.find(group => group.letter === columnAValue);
+                    
+                    row._groupLetter = columnAValue;
+                    row._groupColor = matchingGroup ? matchingGroup.color : '#FFFFFF';
+                });
                 
                 return { mainData, groupDefinitions };
             };
@@ -244,12 +246,6 @@
                 return sortableItems;
             }, [filteredData, sortConfig]);
 
-            const paginatedData = sortedData.slice(
-                (currentPage - 1) * itemsPerPage,
-                currentPage * itemsPerPage
-            );
-
-            const totalPages = Math.ceil(sortedData.length / itemsPerPage);
 
             const headers = data.length > 0 ? Object.keys(data[0]).filter(key => !key.startsWith('_')) : [];
 
@@ -296,15 +292,15 @@
                     {fileName && (
                         <div className="file-info-bar">
                             <span className="file-name">📄 {fileName}</span>
-                            <span className="data-count">{data.length} records geladen (A1:O8)</span>
+                            <span className="data-count">{data.length} records geladen (A1:W6)</span>
                             <button 
                                 className="clear-btn"
                                 onClick={() => {
                                     setData([]);
+                                    setGroups([]);
                                     setFileName(null);
                                     setError(null);
                                     setSearchTerm('');
-                                    setCurrentPage(1);
                                 }}
                             >
                                 Wissen
@@ -321,7 +317,6 @@
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
-                                        setCurrentPage(1);
                                     }}
                                     className="search-input"
                                 />
@@ -377,7 +372,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {paginatedData.map((row, rowIndex) => (
+                                    {sortedData.map((row, rowIndex) => (
                                         <tr key={rowIndex} style={{ backgroundColor: row._groupColor || '#FFFFFF' }}>
                                             {headers.map((header, colIndex) => (
                                                 <td key={colIndex}>
@@ -426,27 +421,6 @@
                         </div>
                     )}
 
-                    {totalPages > 1 && (
-                        <div className="pagination">
-                            <button 
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                disabled={currentPage === 1}
-                                className="pagination-btn"
-                            >
-                                ← Vorige
-                            </button>
-                            <div className="pagination-info">
-                                Pagina {currentPage} van {totalPages}
-                            </div>
-                            <button 
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                disabled={currentPage === totalPages}
-                                className="pagination-btn"
-                            >
-                                Volgende →
-                            </button>
-                        </div>
-                    )}
                 </div>
             );
         };
