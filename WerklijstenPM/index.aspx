@@ -154,7 +154,7 @@
                             />
                             <button 
                                 className="upload-btn"
-                                onClick={() => fileInputRef.current?.click()}
+                                onClick={() => fileInputRef.current && fileInputRef.current.click()}
                             >
                                 <span className="btn-icon">📂</span>
                                 Excel Importeren
