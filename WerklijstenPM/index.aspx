@@ -305,7 +305,7 @@
             if (filteredData.length === 0) return;
             
             const headerRow = document.createElement('tr');
-            const allHeaders = Object.keys(filteredData[0]).filter(key => !key.startsWith('_'));
+            const allHeaders = Object.keys(filteredData[0]).filter(key => !key.startsWith('_')); // Corrected: Only one declaration
             const headers = visibleColumns.length > 0 ? visibleColumns : allHeaders;
             
             headers.forEach((header, index) => {
@@ -350,7 +350,7 @@
                     const value = row[header];
                     
                     // Make column A (first column) bold - check if this is the original first column
-                    const allHeaders = Object.keys(row).filter(key => !key.startsWith('_'));
+                    // Use the allHeaders declared at the beginning of the function
                     const originalIndex = allHeaders.indexOf(header);
                     if (originalIndex === 0) {
                         td.style.fontWeight = 'bold';

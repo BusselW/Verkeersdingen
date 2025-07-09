@@ -165,12 +165,12 @@
             
             if (currentData.length === 0) return;
             
-            const allHeaders = Object.keys(currentData[0]).filter(key => !key.startsWith('_'));
+            const allHeadersInCurrentData = Object.keys(currentData[0]).filter(key => !key.startsWith('_'));
             
             if (searchTerm === '') {
-                visibleColumns = [...allHeaders];
+                visibleColumns = [...allHeadersInCurrentData];
             } else {
-                visibleColumns = allHeaders.filter(header => 
+                visibleColumns = allHeadersInCurrentData.filter(header => 
                     header.toLowerCase().includes(searchTerm)
                 );
             }
@@ -261,7 +261,6 @@
                     const value = row[header];
                     
                     // Make column A (first column) bold - check if this is the original first column
-                    const allHeaders = Object.keys(row).filter(key => !key.startsWith('_'));
                     const originalIndex = allHeaders.indexOf(header);
                     if (originalIndex === 0) {
                         td.style.fontWeight = 'bold';
@@ -285,9 +284,9 @@
                 tbody.appendChild(tr);
             });
             
-            const allHeaders = Object.keys(currentData[0] || {}).filter(key => !key.startsWith('_'));
+            const allHeadersForResultsInfo = Object.keys(currentData[0] || {}).filter(key => !key.startsWith('_'));
             document.getElementById('resultsInfo').textContent = 
-                `${headers.length} van ${allHeaders.length} kolommen`;
+                `${headers.length} van ${allHeadersForResultsInfo.length} kolommen`;
         }
 
         function updatePagination() {
